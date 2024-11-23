@@ -1,12 +1,12 @@
 print("--------------------成功注入，正在加载中--------------------")
 local loadsuc, OrionLib = pcall(function()
-    return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/source'))()
+    return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/main.lua'))()
 end)
 if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
     return
 end
-local Ver = "Alpha 0.0.3"
+local Ver = "Alpha 0.0.31"
 print("--OrionLib已加载完成--------------------------------加载中--")
 OrionLib:MakeNotification({
     Name = "加载中...",
@@ -31,7 +31,7 @@ local TeleportService = game:GetService("TeleportService") -- 传送服务
 local Players = game:GetService("Players") -- 玩家服务
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
 local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
-local Espboxes = Players.LocalPlayer.PlayerGui
+local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
 local RemoteFolder = game:GetService('ReplicatedStorage').Events -- Remote Event储存区之一
 --local结束->Function设置
 local function Notify(name,content,time,usesound,sound) -- 信息
@@ -82,12 +82,12 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
     Instance.new("UIStroke", txt)
     if hlset then
         local hl = Instance.new("Highlight",bill)
-        hl.Name = name .. "Esp Highlight"
-        hl.Parent = Players.LocalPlayer.PlayerGui
+        hl.Name = name .. "透视高光"
+        hl.Parent = PlayerGui
         hl.Adornee = theobject
         hl.DepthMode = "AlwaysOnTop"
         hl.FillColor = color
-        hl.FillTransparency = "0.5"
+        hl.FillTransparency = "0.6"
     end
     task.spawn(function()
         while hl do
@@ -100,12 +100,12 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
 end
 local function espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
     for _, themodel in pairs(workspace:GetDescendants()) do
-        if themodel:IsA("Model") and themodel.Parent ~= Players and themodel.Name == modelname then
+        if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
             createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
         end
     end
     local esp = workspace.DescendantAdded:Connect(function(themodel)
-        if themodel:IsA("Model") and themodel.Parent ~= Players and themodel.Name == modelname then
+        if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
             createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
         end
     end)
@@ -113,15 +113,28 @@ local function espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
 end
 local function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
-        if esp.Name == name .. "Esp Highlight" then
+        if esp.Name == name .. "esp" then
             esp:Destroy()
         end
     end
     for _, hl in pairs(workspace:GetDescendants()) do
-        if hl.Name == name .. "Esp Highlight" then
+        if hl.Name == name .. "透视高光" then
             hl:Destroy()
         end
     end
+end
+local function createPlatform(name, sizeVector3,positionVector3) -- 创建平台-Vector3.new(x,y,z)
+    if Platform then
+        Platform:Destroy() -- 移除多余平台
+    end
+    Platform = Instance.new("Part")
+    Platform.Name =name
+    Platform.Size = sizeVector3
+    Platform.Position = positionVector3
+    Platform.Anchored = true
+    Platform.Parent = workspace
+    Platform.Transparency = 1
+    Platform.CastShadow = false
 end
 local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
     if player.Character:FindFirstChild("HumanoidRootPart") then
@@ -214,11 +227,7 @@ Tab:AddToggle({
 Tab:AddButton({ -- 手动返回
     Name = "手动返回",
     Callback = function()
-        if playerPositions[player.UserId] then
-            teleportPlayerBack(Players.LocalPlayer)
-        else
-            Notify("返回失败","存储玩家原坐标的数值无法用于返回")
-        end
+        teleportPlayerBack(Players.LocalPlayer)
     end
 })
 local Section = Tab:AddSection({
@@ -231,10 +240,10 @@ Tab:AddToggle({ -- 轻松交互
         if Value then
             ezinst = true
             task.spawn(function()
-                while ezinst do
+                while ezinst and OrionLib:IsRunning() do
                     for _, toezInteract in pairs(workspace:GetDescendants()) do
                         if toezInteract:IsA("ProximityPrompt") then
-                            toezInteract.HoldDuration = "0.01"
+                            toezInteract.HoldDuration = "0"
                             toezInteract.RequiresLineOfSight = false
                             toezInteract.MaxActivationDistance = "11.5"
                         end
@@ -254,8 +263,8 @@ Tab:AddToggle({ -- 轻松交互
         if Value then
             ezfix = true
             task.spawn(function()
-                while ezfix do
-                    local FixGame = game.Players.LocalPlayer.PlayerGui.Main.FixMinigame.Background.Frame.Middle
+                while ezfix and OrionLib:IsRunning() do
+                    local FixGame = PlayerGui.Main.FixMinigame.Background.Frame.Middle
                     FixGame.Circle.Rotation = FixGame.Pointer.Rotation - 20
                     task.wait()
                 end
@@ -272,8 +281,8 @@ Tab:AddToggle({ -- 轻松交互
         if Value then
             auto367game = true
             task.spawn(function()
-                while PandemoniumGame.circle.Position ~= UDim2.new(0, 0, 0, 20) and auto367game do
-                    local PandemoniumGame = game.Players.LocalPlayer.PlayerGui.Main.PandemoniumMiniGame.Background.Frame
+                while PandemoniumGame.circle.Position ~= UDim2.new(0, 0, 0, 20) and auto367game and OrionLib:IsRunning() do
+                    local PandemoniumGame = PlayerGui.Main.PandemoniumMiniGame.Background.Frame
                     PandemoniumGame.circle.Position = UDim2.new(0, 0, 0, 20)
                     task.wait()
                 end
@@ -290,7 +299,7 @@ Tab:AddToggle({ -- 轻松交互
         if Value then
             autoinst = true
             task.spawn(function()
-                while autoinst do -- 交互-循环
+                while autoinst and OrionLib:IsRunning() do -- 交互-循环
                     for _, descendant in pairs(workspace:GetDescendants()) do
                         local parentModel = descendant:FindFirstAncestorOfClass("Model")
                         if descendant:IsA("ProximityPrompt") and not table.find(noautoinst, parentModel.Name) then
@@ -315,7 +324,7 @@ Tab:AddToggle({ -- 保持广角
         if Value then
             keep120fov = true
             task.spawn(function()
-                while game.Workspace.Camera.FieldOfView ~= "120" and keep120fov do
+                while game.Workspace.Camera.FieldOfView ~= "120" and keep120fov and OrionLib:IsRunning() do
                     game.Workspace.Camera.FieldOfView = "120"
                     task.wait()
                 end
@@ -333,7 +342,7 @@ Tab:AddToggle({ -- 高亮
         if Value then
             FullBrightLite = true
             task.spawn(function()
-                while FullBrightLite do
+                while FullBrightLite and OrionLib:IsRunning() do
                     Light.Ambient = Color3.new(1, 1, 1)
                     Light.ColorShift_Bottom = Color3.new(1, 1, 1)
                     Light.ColorShift_Top = Color3.new(1, 1, 1)
@@ -367,6 +376,16 @@ Tab:AddToggle({ -- 高亮
 local Section = Tab:AddSection({
     Name = "其他"
 })
+Tab:AddButton({ --传送门
+    Name = "传送到下一扇门",
+    Callback = function()
+        for _, notopendoor in pairs(workspace:GetDescendants()) do
+            if notopendoor.Name == "NormalDoor" and notopendoor.Parent.Name == "Entrances" and notopendoor.OpenValue.Value == false then
+                teleportPlayerTo(Players.LocalPlayer, notopendoor.Root.Position, false)
+            end
+        end
+    end
+})
 Tab:AddButton({
     Name = "再来一局",
     Callback = function()
@@ -390,29 +409,8 @@ Tab:AddSlider({
 })
 Tab:AddToggle({ -- 玩家提醒
     Name = "玩家提醒",
-    Default = true,
-    Flag = "PlayerNotifications"
-})
-Tab:AddToggle({ -- 自动跳关
-    Name = "自动跳关",
     Default = false,
-    Callback = function(Value)
-        if Value then
-            autogame = true
-            task.spawn(function()
-                while autogame do
-                    for _, notopendoor in pairs(workspace:GetDescendants()) do
-                        if notopendoor.Name == "NormalDoor" and notopendoor.Parent.Name == "Entrances" and notopendoor.OpenValue.Value == false then
-                            teleportPlayerTo(Players.LocalPlayer,notopendoor.Root.Position,false)
-                        end
-                    end
-                    task.wait(0.1)
-                end
-            end)
-        else
-        autogame = false
-        end
-    end
+    Flag = "PlayerNotifications"
 })
 Tab:AddButton({
     Name = "删除已修复装置的透视",
@@ -601,43 +599,29 @@ Esp:AddToggle({ -- door
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("NormalDoor","门","0","1","0",true)
-            espmodel("BigRoomDoor", "大门", "0", "1", "0",true)
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "NormalDoor" then
+                    createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
+                end
+                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "BigRoomDoor" then
+                    createBilltoesp(themodel,"大门", Color3.new(0,1,0),true)
+                end
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "NormalDoor" then
+                    createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
+                end
+                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "BigRoomDoor" then
+                    createBilltoesp(themodel,"大门", Color3.new(0,1,0),true)
+                end
+            end)
+            table.insert(EspConnects,esp)
         else
             unesp("门")
             unesp("大门")
         end
     end
 })
---[[Esp:AddToggle({ -- door
-    Name = "主门透视",
-    Default = true,
-    Callback = function(Value)
-        maindooresp = Value
-        if maindooresp then
-            if maindooresp then
-                for _, NormalDoor in pairs(workspace:GetDescendants()) do
-                    if NormalDoor:IsA("Model") and NormalDoor.Parent == "Entrances" then
-                        createBilltoesp("NormalDoor", "主门", Color3.new(0, 1, 0))
-                    end
-                end
-                workspace.DescendantAdded:Connect(function(NormalDoor)
-                    if NormalDoor:IsA("Model") and NormalDoor.Parent == "Entrances" then
-                        createBilltoesp(NormalDoor, "主门", Color3.new(0, 1, 0))
-                    end
-                end)
-            end
-        else
-            maindooresp = false
-            unesp("主门")
-            for _, unmaindooresp in pairs(Players.LocalPlayer.PlayerGui:GetDescendants()) do
-                if unmaindooresp.Name == "主门espbox" then
-                    unmaindooresp:Destroy()
-                end
-            end
-        end
-    end
-})]]
 Esp:AddToggle({ -- locker
     Name = "柜子透视",
     Default = true,
@@ -655,7 +639,7 @@ Esp:AddToggle({ -- keycard
     Callback = function(Value)
         if Value then
             espmodel("NormalKeyCard", "钥匙卡", "0", "0", "1",true)
-            espmodel("InnerKeyCard", "特殊钥匙卡", "1", "0", "0",true)
+            espmodel("InnerKeyCard", "特殊钥匙卡", "100", "0", "255",true)
             espmodel("RidgeKeyCard", "山脊钥匙卡", "1", "1", "0",true)
         else
             unesp("钥匙卡")
@@ -682,7 +666,7 @@ Esp:AddToggle({ -- fake locker
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("MonsterLocker", "假柜子", "1", "0", "0",true)
+            espmodel("MonsterLocker", "假柜子", "1", "0", "0",false)
         else
             unesp("假柜子")
         end
@@ -980,9 +964,9 @@ workspaceCA = workspace.ChildAdded:Connect(function(child) -- 关于实体
         if OrionLib.Flags.NotifyEntities.Value and OrionLib.Flags.avoid.Value == false then -- 实体提醒
             entityNotifi(child.Name .. "出现")
         end
-        if OrionLib.Flags.avoid.Value and child.Name ~= "Mirage" then -- 自动躲避            
-            teleportPlayerTo(Players.LocalPlayer,Vector3.new(1000,6000,1000),true)
-            Character:FindFirstChild("HumanoidRootPart").Anchored = true
+        if OrionLib.Flags.avoid.Value and child.Name ~= "Mirage" then -- 自动躲避
+            createPlatform("AvoidPlatform", Vector3.new(3000, 1, 3000), Vector3.new(5000, 10000, 5000))
+            teleportPlayerTo(Players.LocalPlayer, Platform.Position + Vector3.new(0, Platform.Size.Y / 2 + 5, 0),true)
             Entitytoavoid[child] = true
             entityNotifi(child.Name .. "出现,自动躲避中")
         end
@@ -1002,7 +986,6 @@ end)
 workspaceCR = workspace.ChildRemoved:Connect(function(child) -- 关于实体
     if table.find(entityNames, child.Name) then
         if OrionLib.Flags.avoid.Value and Entitytoavoid[child] then -- 自动躲避
-            Character:FindFirstChild("HumanoidRootPart").Anchored = false
             teleportPlayerBack(Players.LocalPlayer)
             Entitytoavoid[child] = nil
         end

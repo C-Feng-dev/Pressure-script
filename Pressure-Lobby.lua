@@ -1,6 +1,6 @@
 print("--------------------成功注入，正在加载中--------------------")
 local loadsuc, OrionLib = pcall(function()
-    return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/source'))()
+    return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/main.lua'))()
 end)
 if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
@@ -22,11 +22,6 @@ local Window = OrionLib:MakeWindow({
     ConfigFolder = "PressureScript"
 })
 -- local设置
-local entityNames = {"Angler", "RidgeAngler", "Blitz", "RidgeBlitz", "Pinkie", "RidgePinkie", "Froger", "RidgeFroger","Chainsmoker", "Pandemonium", "Eyefestation", "A60", "Mirage"} -- 实体
-local noautoinst = {"Locker", "MonsterLocker", "LockerUnderwater", "Generator", "BrokenCable","EncounterGenerator","Saboterousrusrer","Toilet"}
-local playerPositions = {} -- 存储玩家坐标
-local Entitytoavoid = {} -- 自动躲避用-检测自动躲避的实体
-local EspConnects = {}
 local TeleportService = game:GetService("TeleportService") -- 传送服务
 local Players = game:GetService("Players") -- 玩家服务
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
@@ -43,20 +38,6 @@ local function Notify(name,content,time,usesound,sound) -- 信息
         sound = sound,
         useSound = usesound
     })
-end
-local function copyNotifi(copyitemname) -- 复制信息
-    Notify(copyitemname, "已成功复制")
-end
-local function delNotifi(delthings) -- 删除信息
-    Notify(delthings, "已成功删除")
-end
-local function entityNotifi(entityname) -- 实体提醒
-    Notify("实体提醒", entityname)
-end
-local function copyitems(copyitem) -- 复制物品
-    local create_NumberValue = Instance.new("NumberValue") -- copy items-type NumberValue
-    create_NumberValue.Name = copyitem
-    create_NumberValue.Parent = game.Players.LocalPlayer.PlayerFolder.Inventory
 end
 local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
     local bill = Instance.new("BillboardGui", theobject) -- 创建BillboardGui
