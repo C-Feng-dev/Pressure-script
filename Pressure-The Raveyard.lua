@@ -124,14 +124,6 @@ local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送
         player.Character.HumanoidRootPart.CFrame = CFrame.new(toPositionVector3)
     end
 end
-local function teleportPlayerBack(player) -- 返回玩家 
-    if playerPositions[player.UserId] then
-        player.Character.HumanoidRootPart.CFrame = playerPositions[player.UserId]
-        playerPositions[player.UserId] = nil -- 清除坐标
-    else
-        warn("返回失败!存储玩家原坐标的数值无法用于返回")
-    end
-end
 local function loadfinish() -- 加载完成后向控制台发送
     print("--------------------------加载完成--------------------------")
     print("--Pressure Script已加载完成")
@@ -195,7 +187,7 @@ Tab:AddToggle({ -- 轻松交互
         if Value then
             ezinst = true
             task.spawn(function()
-                while ezinst do
+                while ezinst and OrionLib:IsRunning() do
                     for _, toezInteract in pairs(workspace:GetDescendants()) do
                         if toezInteract:IsA("ProximityPrompt") then
                             toezInteract.HoldDuration = "0.01"
@@ -218,7 +210,7 @@ Tab:AddToggle({ -- 轻松交互
         if Value then
             autoinst = true
             task.spawn(function()
-                while autoinst do -- 交互-循环
+                while autoinst and OrionLib:IsRunning() do -- 交互-循环
                     for _, descendant in pairs(workspace:GetDescendants()) do
                         local parentModel = descendant:FindFirstAncestorOfClass("Model")
                         if descendant:IsA("ProximityPrompt") and not table.find(noautoinst, parentModel.Name) then
@@ -243,7 +235,7 @@ Tab:AddToggle({ -- 保持广角
         if Value then
             keep120fov = true
             task.spawn(function()
-                while game.Workspace.Camera.FieldOfView ~= "120" and keep120fov do
+                while game.Workspace.Camera.FieldOfView ~= "120" and keep120fov and OrionLib:IsRunning() do
                     game.Workspace.Camera.FieldOfView = "120"
                     task.wait()
                 end
@@ -261,7 +253,7 @@ Tab:AddToggle({ -- 高亮
         if Value then
             FullBrightLite = true
             task.spawn(function()
-                while FullBrightLite do
+                while FullBrightLite and OrionLib:IsRunning() do
                     Light.Ambient = Color3.new(1, 1, 1)
                     Light.ColorShift_Bottom = Color3.new(1, 1, 1)
                     Light.ColorShift_Top = Color3.new(1, 1, 1)

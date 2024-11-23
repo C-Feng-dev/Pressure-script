@@ -243,7 +243,7 @@ MainGroup:AddButton({ -- 手动返回
     Text = "手动返回",
     DoubleClick = true,
     Tooltip = '手动返回记录的坐标点',
-    Func = function()
+    Callback = function()
         teleportPlayerBack(Players.LocalPlayer)
     end
 })
@@ -408,7 +408,7 @@ end)
 OtherInInteract:AddButton({
     Text = "再来一局",
     DoubleClick = true,
-    Func = function()
+    Callback = function()
         Notify("请稍等...")
         RemoteFolder.PlayAgain:FireServer()
     end
@@ -529,7 +529,7 @@ DelGroup:AddToggle("noFriendPart",{
 })
 OnceDelGroup:AddButton({
     Text = "删除第一次boss关音乐",
-    Func = function()
+    Callback = function()
         workspace.RegSearchlightsIntro:Destroy()
         workspace.RegSearchlightsLoop:Destroy()
         delNotification("boss关音乐")
@@ -537,21 +537,21 @@ OnceDelGroup:AddButton({
 })
 OnceDelGroup:AddButton({
     Text = "删除第二次boss关音乐",
-    Func = function()
+    Callback = function()
         workspace.FinaleSong:Destroy()
         delNotification("boss关音乐")
     end
 })
 OnceDelGroup:AddButton({
     Text = "关闭大炮滴滴声",
-    Func = function()
+    Callback = function()
         workspace.Rooms.SearchlightsEnding.TriggerLever.Box.FinaleSignal.Playing = false
         workspace.Rooms.SearchlightsEnding.Parts.CaveLight.Part.FinaleSignal.Playing = false
     end
 })
 OnceDelGroup:AddButton({
     Text = "手动删除Searchlights(第一次boss战)",
-    Func = function()
+    Callback = function()
         local SLE_room = workspace.Rooms.SearchlightsEncounter
         SLE_room.Searchlights:Destroy()
         SLE_room.MainSearchlight:Destroy()
@@ -560,7 +560,7 @@ OnceDelGroup:AddButton({
 })
 OnceDelGroup:AddButton({
     Text = "手动删除Searchlights(第二次boss战)",
-    Func = function()
+    Callback = function()
         local SLE_room = workspace.Rooms.SearchlightsEnding.Interactables
         SLE_room.Searchlights:Destroy()
         SLE_room.Searchlights1:Destroy()
@@ -890,7 +890,7 @@ PlayerOtherGroup:AddToggle('AutoRotate',{ -- 自动转向
 })
 PlayerOtherGroup:AddButton({
     Text = "坐",
-    Func = function()
+    Callback = function()
         humanoid.Sit = true
     end
 })
@@ -913,7 +913,7 @@ local AnimatorGroup = Tabs.Others:AddRightGroupbox('动画')-- 动画
 local MiscGroupBox = Tabs.Others:AddRightGroupbox('杂项')
 InjectGroupBox:AddButton({
     Text = "注入Infinity Yield",
-    Func = function()
+    Callback = function()
         Notify("尝试注入Infinity Yield")
         loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
         Notify("注入完成(如果没有加载请重试)")
@@ -921,7 +921,7 @@ InjectGroupBox:AddButton({
 })
 InjectGroupBox:AddButton({
     Text = "注入Dex v2 white(会卡顿)",
-    Func = function()
+    Callback = function()
         Notify("尝试注入Dex v2 white")
         loadstring(game:HttpGet('https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0'))()
         Notify("注入完成(如果没有加载请重试)")
@@ -929,7 +929,7 @@ InjectGroupBox:AddButton({
 })
 InjectGroupBox:AddButton({
     Text = "注入Dex v4 Beta(会卡顿)",
-    Func = function()
+    Callback = function()
         Notify("尝试注入Dex v4 Beta")
         local RepositoryName = "Dex"
         local File = "out.lua"
@@ -940,7 +940,7 @@ InjectGroupBox:AddButton({
 })
 InjectGroupBox:AddButton({
     Text = "注入UNC Test(英文)",
-    Func = function()
+    Callback = function()
         Notify("尝试注入UNC Test")
         loadstring(game:HttpGet('https://raw.githubusercontent.com/unified-naming-convention/NamingStandard/main/UNCCheckEnv.lua'))()
         Notify("注入完成(如果没有加载请重试)")
@@ -948,14 +948,14 @@ InjectGroupBox:AddButton({
 })
 JoinGroupBox:AddButton({
     Text = "加入随机大厅",
-    Func = function()
+    Callback = function()
         Notify("尝试加入中")
         TeleportService:Teleport(12411473842)
     end
 })
 JoinGroupBox:AddButton({
     Text = "加入随机游戏",
-    Func = function()
+    Callback = function()
         Notify("尝试加入中")
         TeleportService:Teleport(12552538292)
     end
@@ -983,61 +983,61 @@ AnimatorGroup:AddDivider()
 AnimatorGroup:AddLabel('部分动画')
 AnimatorGroup:AddButton({
     Text = "进柜",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://12497909905")
     end
 })
 AnimatorGroup:AddButton({
     Text = "摔倒",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://13842248811")
     end
 })
 AnimatorGroup:AddButton({
     Text = "假门攻击",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://14783001346")
     end
 })
 AnimatorGroup:AddButton({
     Text = "假柜-攻击",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://14826175401")
     end
 })
 AnimatorGroup:AddButton({
     Text = "假柜-被救",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://15901315168")
     end
 })
 AnimatorGroup:AddButton({
     Text = "假柜-救人",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://15901325144")
     end
 })
 AnimatorGroup:AddButton({
     Text = "z90攻击",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://17374784439")
     end
 })
 AnimatorGroup:AddButton({
     Text = "电机修复",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://17557575607")
     end
 })
 AnimatorGroup:AddButton({
     Text = "z13甩人",
-    Func = function()
+    Callback = function()
         Animation("rbxassetid://18836343961")
     end
 })
 MiscGroupBox:AddButton({
     Text = "删除Dex",
-    Func = function()   
+    Callback = function()   
         if game.CoreGui.Dex then
             game.CoreGui.Dex:Destroy()
         elseif Players.LocalPlayer.PlayerGui.Dex then
