@@ -163,6 +163,7 @@ local function loadfinish() -- 加载完成后向控制台发送
     print("--此服务器位置ID为:" .. game.PlaceId)
     print("--此服务器UUID为:" .. game.JobId)
     print("--此服务器上的游戏版本为:version_" .. game.PlaceVersion)
+    print("--当前您位于Pressure-Hadal Blacksite")
     print("--------------------------欢迎使用--------------------------")
 end
 --Function结束-其他

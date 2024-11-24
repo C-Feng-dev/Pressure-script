@@ -6,7 +6,7 @@ if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
     return
 end
-local Ver = "Alpha 0.0.2"
+local Ver = "Alpha 0.0.1"
 print("--OrionLib已加载完成--------------------------------加载中--")
 OrionLib:MakeNotification({
     Name = "加载中...",
@@ -15,14 +15,13 @@ OrionLib:MakeNotification({
     Time = 4
 })
 local Window = OrionLib:MakeWindow({
-    IntroText = "The Raveyard",
-    Name = "Pressure-The Raveyard",
+    IntroText = "Pressure",
+    Name = "Pressure",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "PressureScript-Raveyard"
+    ConfigFolder = "PressureScript-Lobby"
 })
 -- local设置
-local EspConnects = {}
 local TeleportService = game:GetService("TeleportService") -- 传送服务
 local Players = game:GetService("Players") -- 玩家服务
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
@@ -39,17 +38,6 @@ local function Notify(name,content,time,usesound,sound) -- 信息
         sound = sound,
         useSound = usesound
     })
-end
-local function delNotifi(delthings) -- 删除信息
-    Notify(delthings, "已成功删除")
-end
-local function entityNotifi(entityname) -- 实体提醒
-    Notify("实体提醒", entityname)
-end
-local function copyitems(copyitem) -- 复制物品
-    local create_NumberValue = Instance.new("NumberValue") -- copy items-type NumberValue
-    create_NumberValue.Name = copyitem
-    create_NumberValue.Parent = game.Players.LocalPlayer.PlayerFolder.Inventory
 end
 local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
     local bill = Instance.new("BillboardGui", theobject) -- 创建BillboardGui
@@ -75,21 +63,21 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
     Instance.new("UIStroke", txt)
     if hlset then
         local hl = Instance.new("Highlight",bill)
-        hl.Name = name .. "透视高光"
+        hl.Name = name .. "Esp Highlight"
         hl.Parent = Players.LocalPlayer.PlayerGui
         hl.Adornee = theobject
         hl.DepthMode = "AlwaysOnTop"
         hl.FillColor = color
         hl.FillTransparency = "0.5"
-        task.spawn(function()
-            while hl do
-                if hl.Adornee == nil or not hl.Adornee:IsDescendantOf(workspace) then
-                    hl:Destroy()
-                end
-                task.wait()
-            end
-        end)
     end
+    task.spawn(function()
+        while hl do
+            if hl.Adornee == nil or not hl.Adornee:IsDescendantOf(workspace) then
+                hl:Destroy()
+            end
+            task.wait()
+        end
+    end)
 end
 local function espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
     for _, themodel in pairs(workspace:GetDescendants()) do
@@ -106,12 +94,12 @@ local function espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
 end
 local function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
-        if esp.Name == name .. "esp" then
+        if esp.Name == name .. "Esp Highlight" then
             esp:Destroy()
         end
     end
     for _, hl in pairs(workspace:GetDescendants()) do
-        if hl.Name == name .. "透视高光" then
+        if hl.Name == name .. "Esp Highlight" then
             hl:Destroy()
         end
     end
@@ -124,6 +112,13 @@ local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送
         player.Character.HumanoidRootPart.CFrame = CFrame.new(toPositionVector3)
     end
 end
+local function Animation(AnimationID) -- 动作播放
+    local Animator = humanoid:WaitForChild("Animator")
+    local DoAnimation = Instance.new("Animation")
+    DoAnimation.AnimationId = AnimationID
+    local AnimationTrack = Animator:LoadAnimation(DoAnimation)
+    AnimationTrack:Play()
+end
 local function loadfinish() -- 加载完成后向控制台发送
     print("--------------------------加载完成--------------------------")
     print("--Pressure Script已加载完成")
@@ -132,18 +127,10 @@ local function loadfinish() -- 加载完成后向控制台发送
     print("--此服务器位置ID为:" .. game.PlaceId)
     print("--此服务器UUID为:" .. game.JobId)
     print("--此服务器上的游戏版本为:version_" .. game.PlaceVersion)
-    print("--当前您位于The Raveyard")
+    print("--当前您位于Pressure-Lobby")
     print("--------------------------欢迎使用--------------------------")
 end
 --Function结束-其他
-task.spawn(function()--关闭esp的Connect
-	while (OrionLib:IsRunning()) do
-		task.wait()
-	end
-	for _, Connection in pairs(EspConnects) do
-		Connection:Disconnect()
-	end
-end)
 loadfinish()--其他结束->加载完成信息
 Notify("加载完成", "已成功加载")
 --Tab界面
@@ -152,13 +139,8 @@ local Tab = Window:MakeTab({
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Del = Window:MakeTab({
-    Name = "删除",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-local Esp = Window:MakeTab({
-    Name = "透视",
+local Animator = Window:MakeTab({
+    Name = "动画",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
@@ -169,61 +151,7 @@ local others = Window:MakeTab({
 })
 --子界面
 local Section = Tab:AddSection({
-    Name = "实体"
-})
-Tab:AddToggle({
-    Name = "实体提醒",
-    Default = true,
-    Flag = "NotifyEntities",
-    Save = true
-})
-local Section = Tab:AddSection({
-    Name = "交互"
-})
-Tab:AddToggle({ -- 轻松交互
-    Name = "轻松交互",
-    Default = true,
-    Callback = function(Value)
-        if Value then
-            ezinst = true
-            task.spawn(function()
-                while ezinst and OrionLib:IsRunning() do
-                    for _, toezInteract in pairs(workspace:GetDescendants()) do
-                        if toezInteract:IsA("ProximityPrompt") then
-                            toezInteract.HoldDuration = "0.01"
-                            toezInteract.RequiresLineOfSight = false
-                            toezInteract.MaxActivationDistance = "11.5"
-                        end
-                    end
-                    task.wait(0.1)
-                end
-            end)
-        else
-            ezinst = false
-        end
-    end
-})
-Tab:AddToggle({ -- 轻松交互
-    Name = "自动交互",
-    Default = false,
-    Callback = function(Value)
-        if Value then
-            autoinst = true
-            task.spawn(function()
-                while autoinst and OrionLib:IsRunning() do -- 交互-循环
-                    for _, descendant in pairs(workspace:GetDescendants()) do
-                        local parentModel = descendant:FindFirstAncestorOfClass("Model")
-                        if descendant:IsA("ProximityPrompt") and not table.find(noautoinst, parentModel.Name) then
-                            descendant:InputHoldBegin()
-                        end
-                    end
-                    task.wait(0.05)
-                end
-            end)
-        else
-            autoinst = false
-        end
-    end
+    Name = "主功能"
 })
 local Section = Tab:AddSection({
     Name = "相机"
@@ -235,7 +163,7 @@ Tab:AddToggle({ -- 保持广角
         if Value then
             keep120fov = true
             task.spawn(function()
-                while game.Workspace.Camera.FieldOfView ~= "120" and keep120fov and OrionLib:IsRunning() do
+                while game.Workspace.Camera.FieldOfView ~= "120" and keep120fov do
                     game.Workspace.Camera.FieldOfView = "120"
                     task.wait()
                 end
@@ -253,7 +181,7 @@ Tab:AddToggle({ -- 高亮
         if Value then
             FullBrightLite = true
             task.spawn(function()
-                while FullBrightLite and OrionLib:IsRunning() do
+                while FullBrightLite do
                     Light.Ambient = Color3.new(1, 1, 1)
                     Light.ColorShift_Bottom = Color3.new(1, 1, 1)
                     Light.ColorShift_Top = Color3.new(1, 1, 1)
@@ -268,15 +196,24 @@ Tab:AddToggle({ -- 高亮
         end
     end
 })
+--[[Tab:AddToggle({--第三人称
+    Name = "第三人称(测试)",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            thirdperson = true
+            task.spawn(function()
+                while thirdperson do
+                    workspace.Camera.CFrame = game:GetService("Players").LocalPlayer.Character.UpperTorso.CFrame * CFrame.new(1.5, 0.5, 6.5)                    
+                    task.wait()
+                end
+            end)
+        else
+            thirdperson = false
+        end
+    end})]]
 local Section = Tab:AddSection({
     Name = "其他"
-})
-Tab:AddButton({
-    Name = "再来一局",
-    Callback = function()
-        Notify("再来一局","请稍等...")
-        RemoteFolder.PlayAgain:FireServer()
-    end
 })
 Tab:AddSlider({
     Name = "玩家透明度",
@@ -297,85 +234,43 @@ Tab:AddToggle({ -- 玩家提醒
     Default = true,
     Flag = "PlayerNotifications"
 })
-Del:AddToggle({
-    Name = "删除z564",
-    Default = true,
-    Flag = "noBouncer",
-    Save = true
+Tab:AddButton({
+    Name = "关闭大厅音乐",
+    Callback = function()
+        workspace.PlaylistSong.Volume = 0
+        workspace.PlaylistSong.Looped = true
+    end
 })
-Del:AddToggle({
-    Name = "删除z565",
-    Default = true,
-    Flag = "noSkeletonHead",
-    Save = true
+Tab:AddButton({
+    Name = "重启大厅音乐",
+    Callback = function()
+        workspace.PlaylistSong:Destroy()
+    end
 })
-Del:AddToggle({
-    Name = "删除z566",
-    Default = true,
-    Flag = "noStatueRoot",
-    Save = true
-})
-Esp:AddToggle({ -- door
-    Name = "门透视",
-    Default = true,
-    Callback = function(Value)
-        if Value then
-            for _, themodel in pairs(workspace:GetDescendants()) do
-                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "CryptDoor" then
-                    createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
-                end
-                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "GraveyardGate" then
-                    createBilltoesp(themodel,"大门", Color3.new(0,1,0),true)
-                end
+Tab:AddButton({
+    Name = "删除隐形墙",
+    Callback = function()
+        for _, iw in pairs(workspace:GetDescendants()) do
+            if iw.Name == "InvisibleWalls" then
+                iw:Destroy()
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
-                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "CryptDoor" then
-                    createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
-                end
-                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "GraveyardGate" then
-                    createBilltoesp(themodel,"大门", Color3.new(0,1,0),true)
-                end
-            end)
-            table.insert(EspConnects,esp)
-        else
-            unesp("门")
-            unesp("大门")
         end
     end
 })
-Esp:AddToggle({ -- 钱
-    Name = "钱透视(待做)",
-    Default = true,
-    Callback = function(Value)
-        if Value then
-            espmodel("5Currency", "5钱", "1", "1", "1",false)
-            espmodel("10Currency", "10钱", "1", "1", "1",false)
-            espmodel("15Currency", "15钱", "0.5", "0.5", "0.5",false)
-            espmodel("20Currency", "20钱", "1", "1", "1",false)
-            espmodel("25Currency", "25钱", "1", "1", "0",false)
-            espmodel("50Currency", "50钱", "1", "0.5", "0",true)
-            espmodel("100Currency", "100钱", "1", "0", "1",true)
-            espmodel("200Currency", "200钱", "0", "1", "1",true)
-            espmodel("Relic", "500钱", "0", "1", "1",true)
-        else
-            unesp("5钱")
-            unesp("10钱")
-            unesp("15钱")
-            unesp("20钱")
-            unesp("25钱")
-            unesp("50钱")
-            unesp("100钱")
-            unesp("200钱")
-            unesp("500钱")
-        end
+Tab:AddButton({
+    Name = "关闭大厅音乐",
+    Callback = function()
+        workspace.PlaylistSong.Volume = 0
+        workspace.PlaylistSong.Looped = true
     end
 })
-Esp:AddToggle({ -- 实体
-    Name = "实体透视",
-    Default = true,
-    Flag = "EntityEsp"
+Tab:AddButton({
+    Name = "重启大厅音乐",
+    Callback = function()
+        workspace.PlaylistSong:Destroy()
+    end
 })
-Esp:AddToggle({ -- 玩家
+Tab:AddToggle({ -- 玩家
     Name = "玩家透视",
     Default = false,
     Callback = function(Value)
@@ -390,6 +285,67 @@ Esp:AddToggle({ -- 玩家
                 end
             end
         end
+    end
+})
+Animator:AddTextbox({
+    Name = "动画ID",
+    Callback = function(Animationid)
+        Animation("rbxassetid://" .. Animationid)
+    end
+})
+Animator:AddLabel('部分动画')
+Animator:AddButton({
+    Name = "进柜",
+    Callback = function()
+        Animation("rbxassetid://12497909905")
+    end
+})
+Animator:AddButton({
+    Name = "摔倒",
+    Callback = function()
+        Animation("rbxassetid://13842248811")
+    end
+})
+Animator:AddButton({
+    Name = "假门攻击",
+    Callback = function()
+        Animation("rbxassetid://14783001346")
+    end
+})
+Animator:AddButton({
+    Name = "假柜-攻击",
+    Callback = function()
+        Animation("rbxassetid://14826175401")
+    end
+})
+Animator:AddButton({
+    Name = "假柜-被救",
+    Callback = function()
+        Animation("rbxassetid://15901315168")
+    end
+})
+Animator:AddButton({
+    Name = "假柜-救人",
+    Callback = function()
+        Animation("rbxassetid://15901325144")
+    end
+})
+Animator:AddButton({
+    Name = "z90攻击",
+    Callback = function()
+        Animation("rbxassetid://17374784439")
+    end
+})
+Animator:AddButton({
+    Name = "电机修复",
+    Callback = function()
+        Animation("rbxassetid://17557575607")
+    end
+})
+Animator:AddButton({
+    Name = "z13甩人",
+    Callback = function()
+        Animation("rbxassetid://18836343961")
     end
 })
 local Section = others:AddSection({
@@ -417,10 +373,6 @@ local Section = others:AddSection({
 others:AddButton({
     Name = "删除此窗口",
     Callback = function()
-        workspaceDA:Disconnect()
-        workspaceDR:Disconnect()
-        workspaceCA:Disconnect()
-        workspaceCR:Disconnect()
         for _, Connection in pairs(EspConnects) do
             Connection:Disconnect()
         end
@@ -456,45 +408,7 @@ others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
 others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
 others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
 others:AddParagraph("此服务器UUID为:", game.JobId)
-others:AddLabel("版本:Raveyard_" .. Ver)
-workspaceDA = workspace.DescendantAdded:Connect(function(inst) -- 其他
-    if inst.Name == "Bouncer" then -- 无环境伤害
-        if OrionLib.Flags.EntityEsp.Value then -- 实体esp
-            createBilltoesp(inst, inst.Name, Color3.new(1, 0, 0), true)
-        end
-        if OrionLib.Flags.NotifyEntities.Value and OrionLib.Flags.noBouncer.Value == false then
-            entityNotifi("z564出现")
-        elseif OrionLib.Flags.noBouncer.Value then
-            task.wait(0.1)
-            inst:Destroy()
-            delNotifi("z564")
-        end
-    end
-    if inst.Name == "SkeletonHead" then
-        if OrionLib.Flags.EntityEsp.Value then -- 实体esp
-            createBilltoesp(inst, inst.Name, Color3.new(1, 0, 0), true)
-        end
-        if OrionLib.Flags.NotifyEntities.Value and OrionLib.Flags.noSkeletonHead.Value == false then
-            entityNotifi("z565出现")
-        elseif OrionLib.Flags.noSkeletonHead.Value then
-            task.wait(0.1)
-            inst:Destroy()
-            delNotifi("z565")
-        end
-    end
-    if inst.Name == "StatueRoot" then
-        if OrionLib.Flags.EntityEsp.Value then -- 实体esp
-            createBilltoesp(inst, inst.Name, Color3.new(1, 0, 0), true)
-        end
-        if OrionLib.Flags.NotifyEntities.Value and OrionLib.Flags.noStatueRoot.Value == false then
-            entityNotifi("z566出现")
-        elseif OrionLib.Flags.noStatueRoot.Value then
-            task.wait(0.1)
-            inst:Destroy()
-            delNotifi("z566")
-        end
-    end
-end)
+others:AddLabel("版本:Lobby_" .. Ver)
 Players.PlayerAdded:Connect(function(player)
     if OrionLib.Flags.PlayerNotifications.Value then
         if player:IsFriendsWith(Players.LocalPlayer.UserId) then
