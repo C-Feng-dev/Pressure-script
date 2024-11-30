@@ -6,7 +6,7 @@ if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
     return
 end
-local Ver = "Alpha 0.0.3"
+local Ver = "Alpha 0.0.4"
 print("--OrionLib已加载完成--------------------------------加载中--")
 OrionLib:MakeNotification({
     Name = "加载中...",
@@ -185,45 +185,44 @@ Tab:AddToggle({ -- 轻松交互
     Name = "轻松交互",
     Default = true,
     Callback = function(Value)
-        if Value then
-            ezinst = true
-            task.spawn(function()
-                while ezinst and OrionLib:IsRunning() do
-                    for _, toezInteract in pairs(workspace:GetDescendants()) do
-                        if toezInteract:IsA("ProximityPrompt") then
-                            toezInteract.HoldDuration = "0.01"
-                            toezInteract.RequiresLineOfSight = false
-                            toezInteract.MaxActivationDistance = "11.5"
-                        end
-                    end
-                    task.wait(0.1)
-                end
-            end)
-        else
+        if Value == false then
             ezinst = false
+            return
         end
+        ezinst = true
+        task.spawn(function()
+            while ezinst and OrionLib:IsRunning() do
+                for _, toezInteract in pairs(workspace:GetDescendants()) do
+                    if toezInteract:IsA("ProximityPrompt") then
+                        toezInteract.HoldDuration = "0.01"
+                        toezInteract.RequiresLineOfSight = false
+                        toezInteract.MaxActivationDistance = "11.5"
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
     end
 })
 Tab:AddToggle({ -- 轻松交互
     Name = "自动交互",
     Default = false,
     Callback = function(Value)
-        if Value then
-            autoinst = true
-            task.spawn(function()
-                while autoinst and OrionLib:IsRunning() do -- 交互-循环
-                    for _, descendant in pairs(workspace:GetDescendants()) do
-                        local parentModel = descendant:FindFirstAncestorOfClass("Model")
-                        if descendant:IsA("ProximityPrompt") and not table.find(noautoinst, parentModel.Name) then
-                            descendant:InputHoldBegin()
-                        end
-                    end
-                    task.wait(0.05)
-                end
-            end)
-        else
+        if Value == false then
             autoinst = false
+            return
         end
+        autoinst = true
+        task.spawn(function()
+            while autoinst and OrionLib:IsRunning() do -- 交互-循环
+                for _, proximity in pairs(workspace:GetDescendants()) do
+                    if proximity:IsA("ProximityPrompt") then
+                        proximity:InputHoldBegin()
+                    end
+                end
+                task.wait(0.05)
+            end
+        end)
     end
 })
 local Section = Tab:AddSection({
@@ -276,12 +275,42 @@ Tab:AddButton({ --传送门
     Name = "传送到下一扇门",
     Callback = function()
         for _, notopendoor in pairs(workspace:GetDescendants()) do
-            if notopendoor.Name == "CryptDoor" and notopendoor.Parent.Name == "Entrances" and notopendoor.OpenValue.Value == false then
-                teleportPlayerTo(Players.LocalPlayer, notopendoor.Root.Position, false)
+            if table.find(doors, notopendoor.Name) and notopendoor.Parent.Name == "Entrances" and notopendoor.OpenValue.Value == false then
+                teleportPlayerTo(Players.LocalPlayer, notopendoor.Root.Position + Vector3.new(0,5,0), false)
             end
-            if notopendoor.Name == "GraveyardGate" and notopendoor.Parent.Name == "Entrances" and notopendoor.OpenValue.Value == false then
-                teleportPlayerTo(Players.LocalPlayer, notopendoor.Root.Position, false)
-            end
+        end
+    end
+})
+Tab:AddToggle({ 
+    Name = "自动过关(测试)",
+    Callback = function(Value)
+        if Value then
+            autoplay = true
+            task.spawn(function()
+                while autoplay and OrionLib:IsRunning() do
+                    for _, notopendoor in pairs(workspace.Rooms:GetDescendants()) do
+                        if table.find(doors, notopendoor.Name) and notopendoor.Parent.Name == "Entrances" and notopendoor.OpenValue.Value == false then
+                            doors = {}
+                            local Exit = notopendoor.Exit.Value
+                            for _, RoomsName in pairs(workspace.Rooms:GetChildren()) do
+                                table.insert(Rooms,RoomsName.Name)
+                            end
+                            if not table.find(Rooms,Exit) then
+                                local Rooms = nil
+                                local Exit = nil
+                                return
+                            end
+                            teleportPlayerTo(Players.LocalPlayer,notopendoor.Root.Position + Vector3.new(0,5,0), false)
+                            if notopendoor.OpenValue.Value == true then
+                                break         
+                            end
+                        end
+                    end
+                    task.wait(0.05)
+                end
+            end)
+        else
+            autoplay = false
         end
     end
 })
@@ -311,6 +340,12 @@ Tab:AddToggle({ -- 玩家提醒
     Default = true,
     Flag = "PlayerNotifications"
 })
+Del:AddButton({
+    Name = "删除降雨效果",
+    Callback = function()
+        workspace.PlayerRain:Destroy()        
+    end
+})
 Del:AddToggle({
     Name = "删除z564",
     Default = true,
@@ -327,6 +362,18 @@ Del:AddToggle({
     Name = "删除z566",
     Default = true,
     Flag = "noStatueRoot",
+    Save = true
+})
+Del:AddToggle({
+    Name = "删除骷髅舞者",
+    Default = true,
+    Flag = "noSkeletonDancer",
+    Save = true
+})
+Del:AddToggle({
+    Name = "删除自然灾害",
+    Default = true,
+    Flag = "nodamage",
     Save = true
 })
 Esp:AddToggle({ -- door
@@ -406,9 +453,6 @@ Esp:AddToggle({ -- 玩家
         end
     end
 })
-local Section = others:AddSection({
-    Name = "注入"
-})
 others:AddButton({
     Name = "注入Infinity Yield",
     Callback = function()
@@ -425,9 +469,6 @@ others:AddButton({
         Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
     end
 })
-local Section = others:AddSection({
-    Name = "删除(窗口)"
-})
 others:AddButton({
     Name = "删除此窗口",
     Callback = function()
@@ -441,26 +482,11 @@ others:AddButton({
         OrionLib:Destroy()
     end
 })
-local Section = others:AddSection({
-    Name = "加入"
-})
 others:AddButton({
     Name = "加入随机大厅",
     Callback = function()
         Notify("加入游戏", "尝试加入中")
         TeleportService:Teleport(12411473842)
-    end
-})
-others:AddTextbox({
-    Name = "使用UUID加入游戏",
-    Callback = function(jobId)
-        local function failtp()
-            Notify("加入失败", "若UUID正确则可能对应的服务器为预留服务器")
-            warn("加入游戏失败!")
-        end
-        Notify("加入游戏", "尝试加入中")
-        TeleportService:TeleportToPlaceInstance(12552538292, jobId, Players.LocalPlayer)
-        TeleportService.TeleportInitFailed:Connect(failtp)
     end
 })
 local Section = others:AddSection({
@@ -516,6 +542,14 @@ workspaceDA = workspace.DescendantAdded:Connect(function(inst) -- 其他
             delNotifi("z566")
         end
     end
+    if inst.Name == "SkeletonDancer" and OrionLib.Flags.noSkeletonDancer.Value then
+        task.wait(0.1)
+        inst:Destroy()
+    end
+    if inst.Name == "DamagePart" and OrionLib.Flags.nodzamage.Value then
+        task.wait(0.1)
+        inst:Destroy()
+    end
 end)
 Players.PlayerAdded:Connect(function(player)
     if OrionLib.Flags.PlayerNotifications.Value then
@@ -525,9 +559,6 @@ Players.PlayerAdded:Connect(function(player)
             Notififriend = ""
         end
         Notify("玩家提醒", player.Name .. Notififriend .. "已加入", 2,false)
-    end
-    if OrionLib.Flags.playeresp.Value and player ~= Players.LocalPlayer then
-        createBilltoesp(player.Character, player.Name, Color3.new(238, 201, 0))
     end
 end)
 Players.PlayerRemoving:Connect(function(player)

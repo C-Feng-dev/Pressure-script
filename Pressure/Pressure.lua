@@ -6,7 +6,7 @@ if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
     return
 end
-local Ver = "Alpha 0.0.31"
+local Ver = "Alpha 0.0.32"
 print("--OrionLib已加载完成--------------------------------加载中--")
 OrionLib:MakeNotification({
     Name = "加载中...",
@@ -81,9 +81,8 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
     txt.Text = name
     Instance.new("UIStroke", txt)
     if hlset then
-        local hl = Instance.new("Highlight",bill)
+        local hl = Instance.new("Highlight",PlayerGui)
         hl.Name = name .. "透视高光"
-        hl.Parent = PlayerGui
         hl.Adornee = theobject
         hl.DepthMode = "AlwaysOnTop"
         hl.FillColor = color
@@ -98,7 +97,12 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
         end
     end)
 end
-local function espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
+local function espmodel(themodel,modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
+    if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
+        createBilltoesp(themodel, name, Color3.new(r,g,b),hlset)
+    end
+end
+local function espmodel1(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
     for _, themodel in pairs(workspace:GetDescendants()) do
         if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
             createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
@@ -237,82 +241,83 @@ local Section = Tab:AddSection({
 Tab:AddToggle({ -- 轻松交互
     Name = "轻松交互",
     Default = true,
-    Callback = function(Value)
-        if Value then
-            ezinst = true
-            task.spawn(function()
-                while ezinst and OrionLib:IsRunning() do
-                    for _, toezInteract in pairs(workspace:GetDescendants()) do
-                        if toezInteract:IsA("ProximityPrompt") then
-                            toezInteract.HoldDuration = "0"
-                            toezInteract.RequiresLineOfSight = false
-                            toezInteract.MaxActivationDistance = "11.5"
-                        end
-                    end
-                    task.wait(0.1)
-                end
-            end)
-        else
+    Callback = function(Value)  
+        if Value == false then
             ezinst = false
+            return
         end
+        ezinst = true
+        task.spawn(function()
+            while ezinst and OrionLib:IsRunning() do
+                for _, toezInteract in pairs(workspace:GetDescendants()) do
+                    if not toezInteract:IsA("ProximityPrompt") then
+                        return
+                    end
+                    toezInteract.HoldDuration = "0"
+                    toezInteract.RequiresLineOfSight = false
+                    toezInteract.MaxActivationDistance = "12"
+                end
+                task.wait(0.1)
+            end
+        end)
     end
 })
 Tab:AddToggle({ -- 轻松交互
     Name = "轻松修复",
     Default = true,
     Callback = function(Value)
-        if Value then
-            ezfix = true
-            task.spawn(function()
-                while ezfix and OrionLib:IsRunning() do
-                    local FixGame = PlayerGui.Main.FixMinigame.Background.Frame.Middle
-                    FixGame.Circle.Rotation = FixGame.Pointer.Rotation - 20
-                    task.wait()
-                end
-            end)
-        else
+        if Value == false then
             ezfix = false
+            return
         end
+        ezfix = true
+        task.spawn(function()
+            while ezfix and OrionLib:IsRunning() do
+                local FixGame = PlayerGui.Main.FixMinigame.Background.Frame.Middle
+                FixGame.Circle.Rotation = FixGame.Pointer.Rotation - 20
+                task.wait()
+            end
+        end)
     end
 })
 Tab:AddToggle({ -- 轻松交互
     Name = "自动过367小游戏",
     Default = true,
     Callback = function(Value)
-        if Value then
-            auto367game = true
-            task.spawn(function()
-                while PandemoniumGame.circle.Position ~= UDim2.new(0, 0, 0, 20) and auto367game and OrionLib:IsRunning() do
-                    local PandemoniumGame = PlayerGui.Main.PandemoniumMiniGame.Background.Frame
-                    PandemoniumGame.circle.Position = UDim2.new(0, 0, 0, 20)
-                    task.wait()
-                end
-            end)
-        else
+        if Value == false then
             auto367game = false
+            return
         end
+        auto367game = true
+        task.spawn(function()
+            while auto367game and OrionLib:IsRunning() do
+                local PandemoniumGame = PlayerGui.Main.PandemoniumMiniGame.Background.Frame
+                PandemoniumGame.circle.Position = UDim2.new(0, 0, 0, 20)
+                task.wait()
+            end
+        end)
     end
 })
 Tab:AddToggle({ -- 轻松交互
     Name = "自动交互",
     Default = false,
     Callback = function(Value)
-        if Value then
-            autoinst = true
-            task.spawn(function()
-                while autoinst and OrionLib:IsRunning() do -- 交互-循环
-                    for _, descendant in pairs(workspace:GetDescendants()) do
-                        local parentModel = descendant:FindFirstAncestorOfClass("Model")
-                        if descendant:IsA("ProximityPrompt") and not table.find(noautoinst, parentModel.Name) then
-                            descendant:InputHoldBegin()
-                        end
-                    end
-                    task.wait(0.05)
-                end
-            end)
-        else
+        if Value == false then
             autoinst = false
+            return
         end
+        autoinst = true
+        task.spawn(function()
+            while autoinst and OrionLib:IsRunning() do -- 交互-循环
+                for _, proximity in pairs(workspace:GetDescendants()) do
+                    if proximity:IsA("ProximityPrompt") and
+                        not table.find(noautoinst, proximity:FindFirstAncestorOfClass("Model").Name) then
+                        proximity:InputHoldBegin()
+                    end
+                end
+                task.wait(0.05)
+            end
+        end)
     end
 })
 local Section = Tab:AddSection({
@@ -387,6 +392,29 @@ Tab:AddButton({ --传送门
         end
     end
 })
+Tab:AddToggle({ 
+    Name = "自动过关(测试)",
+    Callback = function(Value)
+        if Value then
+            autoplay = true
+            task.spawn(function()
+                while autoplay and OrionLib:IsRunning() do
+                    for _, notopendoor in pairs(workspace:GetDescendants()) do
+                        if notopendoor.Name == "NormalDoor" and notopendoor.Parent.Name == "Entrances" and notopendoor.OpenValue.Value == false then
+                            teleportPlayerTo(Players.LocalPlayer,notopendoor.Root.Position, false)
+                            if notopendoor.OpenValue.Value == true then
+                                break
+                            end          
+                        end
+                    end
+                    task.wait(0.05)
+                end
+            end)
+        else
+            autoplay = false
+        end
+    end
+})
 Tab:AddButton({
     Name = "再来一局",
     Callback = function()
@@ -423,29 +451,6 @@ Tab:AddButton({
             end
             if FixedThings.Name == "BrokenCables" and FixedThings.Fixed.Value == 100 then
                 FixedThings:FindFirstChildOfClass("BillboardGui"):Destroy()
-            end
-        end
-    end
-})
-Tab:AddButton({
-    Name = "关闭大厅音乐",
-    Callback = function()
-        workspace.PlaylistSong.Volume = 0
-        workspace.PlaylistSong.Looped = true
-    end
-})
-Tab:AddButton({
-    Name = "重启大厅音乐",
-    Callback = function()
-        workspace.PlaylistSong:Destroy()
-    end
-})
-Tab:AddButton({
-    Name = "删除隐形墙",
-    Callback = function()
-        for _, iw in pairs(workspace:GetDescendants()) do
-            if iw.Name == "InvisibleWalls" then
-                iw:Destroy()
             end
         end
     end
@@ -600,26 +605,38 @@ Esp:AddToggle({ -- door
     Default = true,
     Callback = function(Value)
         if Value then
+            doorsesp = true
             for _, themodel in pairs(workspace:GetDescendants()) do
-                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "NormalDoor" then
-                    createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
-                end
-                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "BigRoomDoor" then
-                    createBilltoesp(themodel,"大门", Color3.new(0,1,0),true)
+                if themodel.Parent.Name == "Entrances" then
+                    espmodel(themodel,"NormalDoor","门","0","1","0",true)
+                    espmodel(themodel,"BigRoomDoor","大门","0","1","0",true)
                 end
             end
             local esp = workspace.DescendantAdded:Connect(function(themodel)
-                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "NormalDoor" then
-                    createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
-                end
-                if themodel:IsA("Model") and themodel.Parent.Name == "Entrances" and themodel.Name == "BigRoomDoor" then
-                    createBilltoesp(themodel,"大门", Color3.new(0,1,0),true)
+                if themodel.Parent.Name == "Entrances" then
+                    espmodel(themodel,"NormalDoor","门","0","1","0",true)
+                    espmodel(themodel,"BigRoomDoor","大门","0","1","0",true)
                 end
             end)
             table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if doorsesp == false then
+                        esp:Disconnect()
+                        unesp("门")
+                        unesp("大门")
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "门透视高光" or hl.Name == "大门透视高光" then
+                                hl:Destroy()                            
+                            end
+                        end
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
         else
-            unesp("门")
-            unesp("大门")
+            doorsesp = false
         end
     end
 })
@@ -628,9 +645,26 @@ Esp:AddToggle({ -- locker
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("Locker", "柜子", "0", "1", "0",false)
+            lockeresp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                espmodel(themodel,"Locker","柜子","0","1","0",false)
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                espmodel(themodel,"Locker","柜子","0","1","0",false)
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if lockeresp == false then
+                        esp:Disconnect()
+                        unesp("柜子")
+                        break
+                    end   
+                    task.wait(0.1)
+                end                
+            end)
         else
-            unesp("柜子")
+            lockeresp = false
         end
     end
 })
@@ -639,13 +673,37 @@ Esp:AddToggle({ -- keycard
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("NormalKeyCard", "钥匙卡", "0", "0", "1",true)
-            espmodel("InnerKeyCard", "特殊钥匙卡", "100", "0", "255",true)
-            espmodel("RidgeKeyCard", "山脊钥匙卡", "1", "1", "0",true)
+            keyesp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                espmodel(themodel,"NormalKeyCard","钥匙卡","0","0","1",true)
+                espmodel(themodel,"InnerKeyCard","特殊钥匙卡","100","0","255",true)
+                espmodel(themodel,"RidgeKeyCard","山脊钥匙卡","1","1","0",true)
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                espmodel(themodel,"NormalKeyCard","钥匙卡","0","0","1",true)
+                espmodel(themodel,"InnerKeyCard","特殊钥匙卡","100","0","255",true)
+                espmodel(themodel,"RidgeKeyCard","山脊钥匙卡","1","1","0",true)
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if keyesp == false then
+                        esp:Disconnect()
+                        unesp("钥匙卡")
+                        unesp("特殊钥匙卡")
+                        unesp("山脊钥匙卡")
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "钥匙卡透视高光" or hl.Name == "特殊钥匙卡透视高光" or hl.Name == "山脊钥匙卡透视高光" then
+                                hl:Destroy()                            
+                            end
+                        end
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
         else
-            unesp("钥匙卡")
-            unesp("特殊钥匙卡")
-            unesp("山脊钥匙卡")
+            keyesp = false
         end
     end
 })
@@ -654,11 +712,35 @@ Esp:AddToggle({ -- fake door
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("TricksterRoom", "假门", "1", "0", "0",true)
-            espmodel("ServerTrickster", "假门", "1", "0", "0",true)
-            espmodel("RidgeTricksterRoom", "假门", "1", "0", "0",true)
+            fakedooresp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                espmodel(themodel,"TricksterRoom", "假门", "1", "0", "0",true)
+                espmodel(themodel,"ServerTrickster", "假门", "1", "0", "0",true)
+                espmodel(themodel,"RidgeTricksterRoom", "假门", "1", "0", "0",true)
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                espmodel(themodel,"TricksterRoom", "假门", "1", "0", "0",true)
+                espmodel(themodel,"ServerTrickster", "假门", "1", "0", "0",true)
+                espmodel(themodel,"RidgeTricksterRoom", "假门", "1", "0", "0",true)
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if fakedooresp == false then
+                        esp:Disconnect()
+                        unesp("假门")
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "假门透视高光" then
+                                hl:Destroy()                            
+                            end
+                        end
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
         else
-            unesp("假门")
+            fakedooresp = false
         end
     end
 })
@@ -667,9 +749,26 @@ Esp:AddToggle({ -- fake locker
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("MonsterLocker", "假柜子", "1", "0", "0",false)
+            fakelockeresp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                espmodel(themodel,"MonsterLocker", "假柜子", "1", "0", "0",false)
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                espmodel(themodel,"MonsterLocker", "假柜子", "1", "0", "0",false)
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if fakelockeresp == false then
+                        esp:Disconnect()
+                        unesp("假柜子")
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
         else
-            unesp("假柜子")
+            fakelockeresp = false
         end
     end
 })
@@ -678,27 +777,29 @@ Esp:AddToggle({ -- 发电机
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("EncounterGenerator", "未修复发电机", "1", "0", "0",false)
-            espmodel("BrokenCables", "未修复电缆", "1", "0", "0",false)
+            fixdeviceesp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                espmodel(themodel,"EncounterGenerator", "未修复发电机", "1", "0", "0",false)
+                espmodel(themodel,"BrokenCables", "未修复电缆", "1", "0", "0",false)
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                espmodel(themodel,"EncounterGenerator", "未修复发电机", "1", "0", "0",false)
+                espmodel(themodel,"BrokenCables", "未修复电缆", "1", "0", "0",false)
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if fixdeviceesp == false then
+                        esp:Disconnect()
+                        unesp("未修复发电机")
+                        unesp("未修复电缆")
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
         else
-            unesp("未修复发电机")
-            unesp("未修复电缆")
-        end
-    end
-})
-Esp:AddToggle({ -- 拉杆
-    Name = "拉杆透视",
-    Default = true,
-    Callback = function(Value)
-        if Value then
-            espmodel("Lever", "拉杆", "50", "10", "255",false)
-            espmodel("Lever2", "拉杆", "50", "10", "255",false)
-            espmodel("TurretControls", "炮台拉杆", "0", "1", "0",false)
-            espmodel("TriggerLever", "大炮拉杆", "0", "1", "0",false)
-        else
-            unesp("拉杆")
-            unesp("炮台拉杆")
-            unesp("大炮拉杆")
+            fixdeviceesp = false
         end
     end
 })
@@ -707,29 +808,61 @@ Esp:AddToggle({ -- 物品
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("DefaultBattery1", "电池", "1", "1", "1",false)
-            espmodel("Flashlight", "手电筒", "25", "25", "25",false)
-            espmodel("Lantern", "灯笼", "99", "99", "99",false)
-            espmodel("FlashBeacon", "闪光", "1", "1", "1",false)
-            espmodel("Blacklight", "黑光", "127", "0", "255",false)
-            espmodel("Gummylight", "软糖手电筒", "15", "230", "100",false)
-            espmodel("CodeBreacher", "红卡", "255", "30", "30",false)
-            espmodel("DwellerPiece", "墙居者肉块", "50", "10", "25",false)
-            espmodel("Medkit", "医疗箱", "80", "51", "235",false)
-            espmodel("WindupLight", "手摇手电筒", "85", "100", "66",false)
-            espmodel("Book", "魔法书", "0", "255", "255",true)
+            itemesp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                espmodel(themodel,"DefaultBattery1", "电池", "1", "1", "1",false)
+                espmodel(themodel,"Flashlight", "手电筒", "25", "25", "25",false)
+                espmodel(themodel,"Lantern", "灯笼", "99", "99", "99",false)
+                espmodel(themodel,"FlashBeacon", "闪光", "1", "1", "1",false)
+                espmodel(themodel,"Blacklight", "黑光", "127", "0", "255",false)
+                espmodel(themodel,"Gummylight", "软糖手电筒", "15", "230", "100",false)
+                espmodel(themodel,"CodeBreacher", "红卡", "255", "30", "30",false)
+                espmodel(themodel,"DwellerPiece", "墙居者肉块", "50", "10", "25",false)
+                espmodel(themodel,"Medkit", "医疗箱", "80", "51", "235",false)
+                espmodel(themodel,"WindupLight", "手摇手电筒", "85", "100", "66",false)
+                espmodel(themodel,"Book", "魔法书", "0", "255", "255",true)
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                espmodel(themodel,"DefaultBattery1", "电池", "1", "1", "1",false)
+                espmodel(themodel,"Flashlight", "手电筒", "25", "25", "25",false)
+                espmodel(themodel,"Lantern", "灯笼", "99", "99", "99",false)
+                espmodel(themodel,"FlashBeacon", "闪光", "1", "1", "1",false)
+                espmodel(themodel,"Blacklight", "黑光", "127", "0", "255",false)
+                espmodel(themodel,"Gummylight", "软糖手电筒", "15", "230", "100",false)
+                espmodel(themodel,"CodeBreacher", "红卡", "255", "30", "30",false)
+                espmodel(themodel,"DwellerPiece", "墙居者肉块", "50", "10", "25",false)
+                espmodel(themodel,"Medkit", "医疗箱", "80", "51", "235",false)
+                espmodel(themodel,"WindupLight", "手摇手电筒", "85", "100", "66",false)
+                espmodel(themodel,"Book", "魔法书", "0", "255", "255",true)
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if itemesp == false then
+                        esp:Disconnect()
+                        unesp("电池")
+                        unesp("手电筒")
+                        unesp("灯笼")
+                        unesp("闪光")
+                        unesp("黑光")
+                        unesp("软糖手电筒")
+                        unesp("红卡")
+                        unesp("墙居者肉块")
+                        unesp("医疗箱")
+                        unesp("手摇手电筒")
+                        unesp("魔法书")
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "魔法书透视高光" then
+                                hl:Destroy()                            
+                            end
+                        end
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
         else
-            espmodel("电池")
-            unesp("手电筒")
-            unesp("灯笼")
-            unesp("闪光")
-            unesp("黑光")
-            unesp("软糖手电筒")
-            unesp("红卡")
-            unesp("墙居者肉块")
-            unesp("医疗箱")
-            unesp("手摇手电筒")
-            unesp("魔法书")
+            itemesp = false
         end
     end
 })
@@ -738,25 +871,55 @@ Esp:AddToggle({ -- 钱
     Default = true,
     Callback = function(Value)
         if Value then
-            espmodel("5Currency", "5钱", "1", "1", "1",false)
-            espmodel("10Currency", "10钱", "1", "1", "1",false)
-            espmodel("15Currency", "15钱", "0.5", "0.5", "0.5",false)
-            espmodel("20Currency", "20钱", "1", "1", "1",false)
-            espmodel("25Currency", "25钱", "1", "1", "0",false)
-            espmodel("50Currency", "50钱", "1", "0.5", "0",true)
-            espmodel("100Currency", "100钱", "1", "0", "1",true)
-            espmodel("200Currency", "200钱", "0", "1", "1",true)
-            espmodel("Relic", "500钱", "0", "1", "1",true)
+            moneyesp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                espmodel(themodel,"5Currency", "5钱", "1", "1", "1",false)
+                espmodel(themodel,"10Currency", "10钱", "1", "1", "1",false)
+                espmodel(themodel,"15Currency", "15钱", "0.5", "0.5", "0.5",false)
+                espmodel(themodel,"20Currency", "20钱", "1", "1", "1",false)
+                espmodel(themodel,"25Currency", "25钱", "1", "1", "0",false)
+                espmodel(themodel,"50Currency", "50钱", "1", "0.5", "0",true)
+                espmodel(themodel,"100Currency", "100钱", "1", "0", "1",true)
+                espmodel(themodel,"200Currency", "200钱", "0", "1", "1",true)
+                espmodel(themodel,"Relic", "500钱", "0", "1", "1",true)
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                espmodel(themodel,"5Currency", "5钱", "1", "1", "1",false)
+                espmodel(themodel,"10Currency", "10钱", "1", "1", "1",false)
+                espmodel(themodel,"15Currency", "15钱", "0.5", "0.5", "0.5",false)
+                espmodel(themodel,"20Currency", "20钱", "1", "1", "1",false)
+                espmodel(themodel,"25Currency", "25钱", "1", "1", "0",false)
+                espmodel(themodel,"50Currency", "50钱", "1", "0.5", "0",true)
+                espmodel(themodel,"100Currency", "100钱", "1", "0", "1",true)
+                espmodel(themodel,"200Currency", "200钱", "0", "1", "1",true)
+                espmodel(themodel,"Relic", "500钱", "0", "1", "1",true)
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if moneyesp == false then
+                        esp:Disconnect()
+                        unesp("5钱")
+                        unesp("10钱")
+                        unesp("15钱")
+                        unesp("20钱")
+                        unesp("25钱")
+                        unesp("50钱")
+                        unesp("100钱")
+                        unesp("200钱")
+                        unesp("500钱")
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "50钱透视高光" or hl.Name == "100钱透视高光" or hl.Name == "200钱透视高光" or hl.Name == "500钱透视高光" then
+                                hl:Destroy()                            
+                            end
+                        end
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
         else
-            unesp("5钱")
-            unesp("10钱")
-            unesp("15钱")
-            unesp("20钱")
-            unesp("25钱")
-            unesp("50钱")
-            unesp("100钱")
-            unesp("200钱")
-            unesp("500钱")
+            moneyesp = false
         end
     end
 })
@@ -782,9 +945,6 @@ Esp:AddToggle({ -- 玩家
         end
     end
 })
-local Section = others:AddSection({
-    Name = "注入"
-})
 others:AddButton({
     Name = "注入Infinity Yield",
     Callback = function()
@@ -801,9 +961,6 @@ others:AddButton({
         Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
     end
 })
-local Section = others:AddSection({
-    Name = "删除(窗口)"
-})
 others:AddButton({
     Name = "删除此窗口",
     Callback = function()
@@ -817,26 +974,11 @@ others:AddButton({
         OrionLib:Destroy()
     end
 })
-local Section = others:AddSection({
-    Name = "加入"
-})
 others:AddButton({
     Name = "加入随机大厅",
     Callback = function()
         Notify("加入游戏", "尝试加入中")
         TeleportService:Teleport(12411473842)
-    end
-})
-others:AddTextbox({
-    Name = "使用UUID加入游戏",
-    Callback = function(jobId)
-        local function failtp()
-            Notify("加入失败", "若UUID正确则可能对应的服务器为预留服务器")
-            warn("加入游戏失败!")
-        end
-        Notify("加入游戏", "尝试加入中")
-        TeleportService:TeleportToPlaceInstance(12552538292, jobId, Players.LocalPlayer)
-        TeleportService.TeleportInitFailed:Connect(failtp)
     end
 })
 local Section = others:AddSection({
@@ -1014,9 +1156,6 @@ Players.PlayerAdded:Connect(function(player)
             Notififriend = ""
         end
         Notify("玩家提醒", player.Name .. Notififriend .. "已加入", 2,false)
-    end
-    if OrionLib.Flags.playeresp.Value and player ~= Players.LocalPlayer then
-        createBilltoesp(player.Character, player.Name, Color3.new(238, 201, 0))
     end
 end)
 Players.PlayerRemoving:Connect(function(player)

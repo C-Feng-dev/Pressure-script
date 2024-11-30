@@ -1,4 +1,5 @@
 --Regretevator-WIP
+print("--------------------成功注入，正在加载中--------------------")
 local loadsuc, OrionLib = pcall(function()
     return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/main.lua'))()
 end)
@@ -195,17 +196,26 @@ Esp:AddButton({
     end
 })
 Esp:AddButton({
-    Name = "柴火透视",
+    Name = "Lampert透视(3008楼层)",
     Callback = function()
-        if workspace.UES == nil then
+        if workspace.3008_Room == nil then
             nofloorerr()
             return
         end
-        createBilltoesp(workspace.UES.Build.JAOBA,"Jaoba",Color3.new(1,1,1),true)
+        createBilltoesp(workspace.3008_Room.Build.Lampert,"Lampert",Color3.new(1,1,1),true)
     end
 })
-local Section = others:AddSection({
-    Name = "注入"
+
+TP:AddButton({
+    Name = "柴火透视",
+    Callback = function()
+        for _, theEsp in pairs(workspace:GetDescendants()) do
+        if workspace.idk == nil then
+            nofloorerr()
+            return
+        end
+        teleportPlayerTo(player,toPositionVector3,saveposition)
+    end
 })
 others:AddButton({
     Name = "注入Infinity Yield",
@@ -222,9 +232,6 @@ others:AddButton({
         loadstring(game:HttpGet('https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0'))()
         Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
     end
-})
-local Section = others:AddSection({
-    Name = "删除(窗口)"
 })
 others:AddButton({
     Name = "删除此窗口",

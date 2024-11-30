@@ -15,8 +15,8 @@ OrionLib:MakeNotification({
     Time = 4
 })
 local Window = OrionLib:MakeWindow({
-    IntroText = "Pressure",
-    Name = "Pressure",
+    IntroText = "Pressure Lobby",
+    Name = "Pressure-Lobby",
     HidePremium = false,
     SaveConfig = true,
     ConfigFolder = "PressureScript-Lobby"
@@ -348,9 +348,6 @@ Animator:AddButton({
         Animation("rbxassetid://18836343961")
     end
 })
-local Section = others:AddSection({
-    Name = "注入"
-})
 others:AddButton({
     Name = "注入Infinity Yield",
     Callback = function()
@@ -367,9 +364,6 @@ others:AddButton({
         Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
     end
 })
-local Section = others:AddSection({
-    Name = "删除(窗口)"
-})
 others:AddButton({
     Name = "删除此窗口",
     Callback = function()
@@ -379,26 +373,11 @@ others:AddButton({
         OrionLib:Destroy()
     end
 })
-local Section = others:AddSection({
-    Name = "加入"
-})
 others:AddButton({
     Name = "加入随机大厅",
     Callback = function()
         Notify("加入游戏", "尝试加入中")
         TeleportService:Teleport(12411473842)
-    end
-})
-others:AddTextbox({
-    Name = "使用UUID加入游戏",
-    Callback = function(jobId)
-        local function failtp()
-            Notify("加入失败", "若UUID正确则可能对应的服务器为预留服务器")
-            warn("加入游戏失败!")
-        end
-        Notify("加入游戏", "尝试加入中")
-        TeleportService:TeleportToPlaceInstance(12552538292, jobId, Players.LocalPlayer)
-        TeleportService.TeleportInitFailed:Connect(failtp)
     end
 })
 local Section = others:AddSection({
