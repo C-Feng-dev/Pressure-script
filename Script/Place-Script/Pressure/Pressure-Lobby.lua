@@ -1,4 +1,3 @@
-print("--------------------成功注入，正在加载中--------------------")
 local loadsuc, OrionLib = pcall(function()
     return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/main.lua'))()
 end)
