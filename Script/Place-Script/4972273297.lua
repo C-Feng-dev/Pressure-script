@@ -7,7 +7,6 @@ if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
     return
 end
-local Ver = "WIP"
 print("--OrionLib已加载完成--------------------------------加载中--")
 local EspConnects = {}
 local TeleportService = game:GetService("TeleportService") -- 传送服务
@@ -21,14 +20,21 @@ OrionLib:MakeNotification({
     Image = "rbxassetid://4483345998",
     Time = 4
 })
-local function Notify(name,content,time,usesound,sound) -- 信息
+local Window = OrionLib:MakeWindow({
+    IntroText = "Regretevator",
+    Name = "Regretevator",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "Cfg/Regretevator"
+})
+local function Notify(name,content,time,Sound,Sound) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
         Image = "rbxassetid://4483345998",
         Time = time or "3",
-        sound = sound,
-        useSound = usesound
+        Sound = Sound,
+        Sound = Sound
     })
 end
 local function nofloorerr()
@@ -104,13 +110,6 @@ local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送
         player.Character.HumanoidRootPart.CFrame = CFrame.new(toPositionVector3)
     end
 end
-local Window = OrionLib:MakeWindow({
-    IntroText = "Regretevator",
-    Name = "Regretevator",
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "RegretevatorScript"
-})
 local Tab = Window:MakeTab({
     Name = "主界面",
     Icon = "rbxassetid://4483345998",
@@ -249,7 +248,6 @@ others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
 others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
 others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
 others:AddParagraph("此服务器UUID为:", game.JobId)
-others:AddLabel("版本:" .. Ver)
 Players.PlayerAdded:Connect(function(player)
     if OrionLib.Flags.PlayerNotifications.Value then
         if player:IsFriendsWith(Players.LocalPlayer.UserId) then

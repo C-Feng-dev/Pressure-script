@@ -29,7 +29,6 @@ local Toggles = getgenv().Linoria.Toggles--按钮状态
 local FrameTimer = tick()--设置信息local
 local FrameCounter = 0;--设置信息local
 local FPS = 60;--设置信息local
-local Ver = "Alpha0.1.0"--版本
 -- local结束->Function设置
 local function Notify(content,time,sound) -- 信息
     if time == nil then
@@ -1100,7 +1099,6 @@ MusicBoxGroup:AddToggle('MusicBoxLoop',{
 AboutGroupBox:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
 AboutGroupBox:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
 AboutGroupBox:AddLabel("此服务器位置ID为:" .. game.PlaceId)
-AboutGroupBox:AddLabel("版本:" .. Ver)
 local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("菜单")
 MenuGroup:AddToggle("KeybindMenuOpen", { Default = false, Text = "打开键位显示", Callback = function(value) Library.KeybindFrame.Visible = value end})
 MenuGroup:AddButton("关闭LinoriaLib鼠标",function() Library.ShowCustomCursor = false end)

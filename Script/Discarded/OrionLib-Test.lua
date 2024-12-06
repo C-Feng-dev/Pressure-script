@@ -1722,7 +1722,7 @@ function OrionLib:Destroy()
     Orion:Destroy()
 end
 --OrionLib加载完成
-local Ver = "Alpha 0.0.32"
+--Grace
 print("--OrionLib已加载完成--------------------------------加载中--")
 OrionLib:MakeNotification({
     Name = "加载中...",
@@ -1730,27 +1730,18 @@ OrionLib:MakeNotification({
     Image = "rbxassetid://4483345998",
     Time = 4
 })
-local Window = OrionLib:MakeWindow({
-    IntroText = "idk",
-    Name = "Test",
-    HidePremium = false,
-    SaveConfig = false,
-})
--- local设置
-local playerPositions = {} -- 存储玩家坐标
-local TeleportService = game:GetService("TeleportService") -- 传送服务
+local EspConnects = {}
 local Players = game:GetService("Players") -- 玩家服务
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
 local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
 local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
---local结束->Function设置
-local function Notify(name,content,time,usesound,sound) -- 信息
+local function Notify(name,content,time,usesound,Sound) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
         Image = "rbxassetid://4483345998",
         Time = time or "3",
-        sound = sound,
+        Sound = Sound,
         useSound = usesound
     })
 end
@@ -1798,19 +1789,6 @@ local function espmodel(themodel,modelname,name,r,g,b,hlset) -- Esp物品(Model�
         createBilltoesp(themodel, name, Color3.new(r,g,b),hlset)
     end
 end
-local function espmodel1(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
-    for _, themodel in pairs(workspace:GetDescendants()) do
-        if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
-            createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
-        end
-    end
-    local esp = workspace.DescendantAdded:Connect(function(themodel)
-        if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
-            createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
-        end
-    end)
-    table.insert(EspConnects,esp)
-end
 local function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
         if esp.Name == name .. "esp" then
@@ -1822,6 +1800,19 @@ local function unesp(name) -- unEsp物品用
             hl:Destroy()
         end
     end
+end
+local function createPlatform(name, sizeVector3,positionVector3) -- 创建平台-Vector3.new(x,y,z)
+    if Platform then
+        Platform:Destroy() -- 移除多余平台
+    end
+    Platform = Instance.new("Part")
+    Platform.Name =name
+    Platform.Size = sizeVector3
+    Platform.Position = positionVector3
+    Platform.Anchored = true
+    Platform.Parent = workspace
+    Platform.Transparency = 1
+    Platform.CastShadow = false
 end
 local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
     if player.Character:FindFirstChild("HumanoidRootPart") then
@@ -1842,6 +1833,16 @@ end
 local function chatMessage(chat) -- 发送信息
     game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(tostring(chat))
 end
+local function loadfinish() -- 加载完成后向控制台发送
+    print("--------------------------加载完成--------------------------")
+    print("--Pressure Script已加载完成")
+    print("--欢迎使用!" .. game.Players.LocalPlayer.Name)
+    print("--此服务器游戏ID为:" .. game.GameId)
+    print("--此服务器位置ID为:" .. game.PlaceId)
+    print("--此服务器UUID为:" .. game.JobId)
+    print("--此服务器上的游戏版本为:version_" .. game.PlaceVersion)
+    print("--------------------------欢迎使用--------------------------")
+end
 --Function结束-其他
 task.spawn(function()--关闭esp的Connect
 	while (OrionLib:IsRunning()) do
@@ -1851,59 +1852,270 @@ task.spawn(function()--关闭esp的Connect
 		Connection:Disconnect()
 	end
 end)
+loadfinish()--其他结束->加载完成信息
 Notify("加载完成", "已成功加载")
---Tab界面
-local others = Window:MakeTab({
+local Window = OrionLib:MakeWindow({
+    IntroText = "Grace",
+    Name = "Grace",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "Cfg/Grace"
+})
+local Tab = Window:MakeTab({
     Name = "主界面",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
---子界面
-others:AddToggle({ -- 玩家
-    Name = "玩家透视",
+local Del = Window:MakeTab({
+    Name = "删除",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+local Esp = Window:MakeTab({
+    Name = "透视",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+Tab:AddToggle({
+    Name = "实体提醒",
+    Default = true,
+    Flag = "NotifyEntities",
+    Save = true
+})
+Tab:AddToggle({
+    Name = "实体播报",
+    Default = false,
+    Flag = "chatNotifyEntities",
+    Save = true
+})
+Tab:AddToggle({
+    Name = "自动躲避",
+    Default = false,
+    Flag = "avoid",
+    Save = true
+})
+Tab:AddButton({ -- 手动返回
+    Name = "手动返回",
+    Callback = function()
+        teleportPlayerBack(Players.LocalPlayer)
+    end
+})
+local Section = Tab:AddSection({
+    Name = "交互"
+})
+Tab:AddToggle({ -- 轻松交互
+    Name = "自动交互",
     Default = false,
     Callback = function(Value)
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if Value then
-                if player ~= game.Players.LocalPlayer then
-                    createBilltoesp(player.Character, player.Name, Color3.new(238, 201, 0),false)
+        if Value == false then
+            autoinst = false
+            return
+        end
+        autoinst = true
+        task.spawn(function()
+            while autoinst and OrionLib:IsRunning() do -- 交互-循环
+                for _, proximity in pairs(workspace:GetDescendants()) do
+                    if proximity:IsA("ProximityPrompt") and
+                        not table.find(noautoinst, proximity:FindFirstAncestorOfClass("Model").Name) then
+                        proximity:InputHoldBegin()
+                    end
                 end
-            else
-                if player.Character:FindFirstChildOfClass("BillboardGui") then
-                    player.Character:FindFirstChildOfClass("BillboardGui"):Destroy()
+                task.wait(0.05)
+            end
+        end)
+    end
+})
+local Section = Tab:AddSection({
+    Name = "相机"
+})
+Tab:AddToggle({ -- 保持广角
+    Name = "保持广角",
+    Default = true,
+    Callback = function(Value)
+        if Value then
+            keep120fov = true
+            task.spawn(function()
+                while game.Workspace.Camera.FieldOfView ~= "120" and keep120fov and OrionLib:IsRunning() do
+                    game.Workspace.Camera.FieldOfView = "120"
+                    task.wait()
                 end
+            end)
+        else
+            keep120fov = false
+        end
+    end
+})
+Tab:AddToggle({ -- 高亮
+    Name = "高亮(低质量)",
+    Default = true,
+    Callback = function(Value)
+        local Light = game:GetService("Lighting")
+        if Value then
+            FullBrightLite = true
+            task.spawn(function()
+                while FullBrightLite and OrionLib:IsRunning() do
+                    Light.Ambient = Color3.new(1, 1, 1)
+                    Light.ColorShift_Bottom = Color3.new(1, 1, 1)
+                    Light.ColorShift_Top = Color3.new(1, 1, 1)
+                    task.wait()
+                end
+            end)
+        else
+            FullBrightLite = false
+            Light.Ambient = Color3.new(0, 0, 0)
+            Light.ColorShift_Bottom = Color3.new(0, 0, 0)
+            Light.ColorShift_Top = Color3.new(0, 0, 0)
+        end
+    end
+})
+local Section = Tab:AddSection({
+    Name = "其他"
+})
+Tab:AddSlider({
+    Name = "玩家透明度",
+    Min = 0,
+    Max = 1,
+    Default = 0,
+    Increment = 0.05,
+    Callback = function(Value)
+        for _, humanpart in pairs(Character:GetChildren()) do
+            if humanpart:IsA("MeshPart") then
+                humanpart.Transparency = Value
             end
         end
     end
 })
-others:AddButton({
-    Name = "注入Infinity Yield",
-    Callback = function()
-        Notify("注入Infinity Yield", "尝试注入中")
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-        Notify("注入Infinity Yield", "注入完成(如果没有加载则重试)")
+Tab:AddToggle({ -- 玩家提醒
+    Name = "玩家提醒",
+    Default = false,
+    Flag = "PlayerNotifications"
+})
+Esp:AddToggle({ -- door
+    Name = "门透视",
+    Default = true,
+    Callback = function(Value)
+        if Value then
+            doorsesp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                if themodel.Parent.Name == "Door" then
+                    espmodel(themodel,"Door","门","0","1","0",true)
+                end
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                if themodel.Parent.Name == "Door" then
+                    espmodel(themodel,"Door","门","0","1","0",true)
+                end
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if doorsesp == false then
+                        esp:Disconnect()
+                        unesp("门")
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "门透视高光" then
+                                hl:Destroy()                            
+                            end
+                        end
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
+        else
+            doorsesp = false
+        end
     end
 })
-others:AddButton({
-    Name = "注入Dex v2 white(会卡顿)",
-    Callback = function()
-        Notify("注入Dex v2 white", "尝试注入中")
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0'))()
-        Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
+Esp:AddToggle({ -- door
+    Name = "拉杆透视",
+    Default = true,
+    Callback = function(Value)
+        if Value then
+            leveresp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                if themodel.Parent.Name == "Entrances" then
+                    espmodel(themodel,"NormalDoor","门","0","1","0",true)
+                    espmodel(themodel,"BigRoomDoor","大门","0","1","0",true)
+                end
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                if themodel.Parent.Name == "Entrances" then
+                    espmodel(themodel,"NormalDoor","门","0","1","0",true)
+                    espmodel(themodel,"BigRoomDoor","大门","0","1","0",true)
+                end
+            end)
+            table.insert(EspConnects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if leveresp == false then
+                        esp:Disconnect()
+                        unesp("门")
+                        unesp("大门")
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "门透视高光" or hl.Name == "大门透视高光" then
+                                hl:Destroy()                            
+                            end
+                        end
+                        break
+                    end   
+                    task.wait(0.1)
+                end
+            end)
+        else
+            leveresp = false
+        end
     end
 })
-others:AddButton({
-    Name = "删除此窗口",
-    Callback = function()
-        OrionLib:Destroy()
-    end
-})
-local Section = others:AddSection({
-    Name = "关于"
-})
-others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
-others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
-others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
-others:AddParagraph("此服务器UUID为:", game.JobId)
-others:AddLabel("版本:" .. Ver)
+if OrionLib and OrionLib:IsRunning() and TabFunction then
+    local Window = TabFunction[1]
+    local others = Window:MakeTab({
+        Name = "其他",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+    others:AddButton({
+        Name = "注入Infinity Yield",
+        Callback = function()
+            Notify("注入Infinity Yield", "尝试注入中")
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+            Notify("注入Infinity Yield", "注入完成(如果没有加载则重试)")
+        end
+    })
+    others:AddButton({
+        Name = "注入Dex v2 white(会卡顿)",
+        Callback = function()
+            Notify("注入Dex v2 white", "尝试注入中")
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0'))()
+            Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
+        end
+    })
+    others:AddButton({
+        Name = "删除此窗口",
+        Callback = function()
+            workspaceDA:Disconnect()
+            workspaceDR:Disconnect()
+            workspaceCA:Disconnect()
+            workspaceCR:Disconnect()
+            for _, Connection in pairs(EspConnects) do
+                Connection:Disconnect()
+            end
+            OrionLib:Destroy()
+        end
+    })
+    others:AddButton({
+        Name = "加入随机大厅",
+        Callback = function()
+            Notify("加入游戏", "尝试加入中")
+            TeleportService:Teleport(12411473842)
+        end
+    })
+    local Section = others:AddSection({
+        Name = "关于"
+    })
+    others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
+    others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
+    others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
+    others:AddParagraph("此服务器UUID为:", game.JobId)
+end
 --1715行-此处

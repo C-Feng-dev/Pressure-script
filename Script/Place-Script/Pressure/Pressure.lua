@@ -5,7 +5,6 @@ if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
     return
 end
-local Ver = "Alpha 0.0.32"
 print("--OrionLib已加载完成--------------------------------加载中--")
 OrionLib:MakeNotification({
     Name = "加载中...",
@@ -18,7 +17,7 @@ local Window = OrionLib:MakeWindow({
     Name = "Pressure",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "PressureScript"
+    ConfigFolder = "Cfg/Pressure-Game"
 })
 -- local设置
 local entityNames = {"Angler", "RidgeAngler", "Blitz", "RidgeBlitz", "Pinkie", "RidgePinkie", "Froger", "RidgeFroger","Chainsmoker", "Pandemonium", "Eyefestation", "A60", "Mirage"} -- 实体
@@ -33,14 +32,14 @@ local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
 local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
 local RemoteFolder = game:GetService('ReplicatedStorage').Events -- Remote Event储存区之一
 --local结束->Function设置
-local function Notify(name,content,time,usesound,sound) -- 信息
+local function Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
         Image = "rbxassetid://4483345998",
         Time = time or "3",
-        sound = sound,
-        useSound = usesound
+        Sound = Sound,
+        SoundId = SoundId
     })
 end
 local function copyNotifi(copyitemname) -- 复制信息
@@ -100,19 +99,6 @@ local function espmodel(themodel,modelname,name,r,g,b,hlset) -- Esp物品(Model�
     if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
         createBilltoesp(themodel, name, Color3.new(r,g,b),hlset)
     end
-end
-local function espmodel1(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
-    for _, themodel in pairs(workspace:GetDescendants()) do
-        if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
-            createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
-        end
-    end
-    local esp = workspace.DescendantAdded:Connect(function(themodel)
-        if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
-            createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
-        end
-    end)
-    table.insert(EspConnects,esp)
 end
 local function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
@@ -987,7 +973,6 @@ others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
 others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
 others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
 others:AddParagraph("此服务器UUID为:", game.JobId)
-others:AddLabel("版本:" .. Ver)
 workspaceDA = workspace.DescendantAdded:Connect(function(inst) -- 其他
     if inst.Name == "Eyefestation" and OrionLib.Flags.noeyefestation.Value then
         inst:Destroy()

@@ -6,7 +6,6 @@ if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
     return
 end
-local Ver = "WIP"
 print("--OrionLib已加载完成--------------------------------加载中--")
 OrionLib:MakeNotification({
     Name = "加载中...",
@@ -93,14 +92,14 @@ local function esppart(partname,name,r,g,b,hlset)--Esp
     end)
     table.insert(EspConnects,esp)
 end
-local function Notify(name,content,time,usesound,sound) -- 信息
+local function Notify(name,content,time,Sound,Sound) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
         Image = "rbxassetid://4483345998",
         Time = time or "3",
-        sound = sound,
-        useSound = usesound
+        Sound = Sound,
+        Sound = Sound
     })
 end
 local function delNotifi(delthings)--删除信息

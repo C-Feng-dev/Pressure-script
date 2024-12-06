@@ -5,7 +5,6 @@ if loadsuc ~= true then
     warn("OrionLib加载错误,原因:" .. OrionLib)
     return
 end
-local Ver = "Alpha 0.0.1"
 print("--OrionLib已加载完成--------------------------------加载中--")
 OrionLib:MakeNotification({
     Name = "加载中...",
@@ -18,9 +17,10 @@ local Window = OrionLib:MakeWindow({
     Name = "Pressure-Lobby",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "PressureScript-Lobby"
+    ConfigFolder = "Cfg/Pressure-Lobby"
 })
 -- local设置
+local EspConnects = {}
 local TeleportService = game:GetService("TeleportService") -- 传送服务
 local Players = game:GetService("Players") -- 玩家服务
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
@@ -28,14 +28,14 @@ local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
 local Espboxes = Players.LocalPlayer.PlayerGui
 local RemoteFolder = game:GetService('ReplicatedStorage').Events -- Remote Event储存区之一
 --local结束->Function设置
-local function Notify(name,content,time,usesound,sound) -- 信息
+local function Notify(name,content,time,Sound,Sound) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
         Image = "rbxassetid://4483345998",
         Time = time or "3",
-        sound = sound,
-        useSound = usesound
+        Sound = Sound,
+        Sound = Sound
     })
 end
 local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
@@ -386,7 +386,6 @@ others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
 others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
 others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
 others:AddParagraph("此服务器UUID为:", game.JobId)
-others:AddLabel("版本:Lobby_" .. Ver)
 Players.PlayerAdded:Connect(function(player)
     if OrionLib.Flags.PlayerNotifications.Value then
         if player:IsFriendsWith(Players.LocalPlayer.UserId) then

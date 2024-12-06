@@ -18,7 +18,7 @@ local Window = OrionLib:MakeWindow({
     Name = "Pressure-The Raveyard",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "PressureScript-Raveyard"
+    ConfigFolder = "Cfg/Pressure-Raveyard"
 })
 -- local设置
 local EspConnects = {}
@@ -30,14 +30,14 @@ local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
 local Espboxes = Players.LocalPlayer.PlayerGui
 local RemoteFolder = game:GetService('ReplicatedStorage').Events -- Remote Event储存区之一
 --local结束->Function设置
-local function Notify(name,content,time,usesound,sound) -- 信息
+local function Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
         Image = "rbxassetid://4483345998",
         Time = time or "3",
-        sound = sound,
-        useSound = usesound
+        SoundId = SoundId,
+        Sound = Sound
     })
 end
 local function delNotifi(delthings) -- 删除信息
@@ -495,7 +495,6 @@ others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
 others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
 others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
 others:AddParagraph("此服务器UUID为:", game.JobId)
-others:AddLabel("版本:Raveyard_" .. Ver)
 workspaceDA = workspace.DescendantAdded:Connect(function(inst) -- 其他
     if inst.Name == "Bouncer" then -- 无环境伤害
         if OrionLib.Flags.EntityEsp.Value then -- 实体esp

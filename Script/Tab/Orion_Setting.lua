@@ -48,5 +48,4 @@ if OrionLib and OrionLib:IsRunning() and TabFunction then
     others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
     others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
     others:AddParagraph("此服务器UUID为:", game.JobId)
-    others:AddLabel("版本:" .. Ver)
 end
