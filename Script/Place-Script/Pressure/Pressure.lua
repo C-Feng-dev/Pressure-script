@@ -30,7 +30,8 @@ local Players = game:GetService("Players") -- 玩家服务
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
 local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
 local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
-local RemoteFolder = game:GetService('ReplicatedStorage').Events -- Remote Event储存区之一
+local RS = game:GetService("ReplicatedStorage")
+local RemoteFolder = RS.Events -- Remote Event储存区之一
 --local结束->Function设置
 local function Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
@@ -85,15 +86,15 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
         hl.DepthMode = "AlwaysOnTop"
         hl.FillColor = color
         hl.FillTransparency = "0.6"
-    end
-    task.spawn(function()
-        while hl do
-            if hl.Adornee == nil or not hl.Adornee:IsDescendantOf(workspace) then
-                hl:Destroy()
+        task.spawn(function()
+            while hl do
+                if hl.Adornee == nil or not hl.Adornee:IsDescendantOf(workspace) then
+                    hl:Destroy()
+                end
+                task.wait()
             end
-            task.wait()
-        end
-    end)
+        end)
+    end
 end
 local function espmodel(themodel,modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
     if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
@@ -227,27 +228,26 @@ Tab:AddToggle({ -- 轻松交互
     Name = "轻松交互",
     Default = true,
     Callback = function(Value)  
-        if Value == false then
-            ezinst = false
-            return
-        end
-        ezinst = true
-        task.spawn(function()
-            while ezinst and OrionLib:IsRunning() do
-                for _, toezInteract in pairs(workspace:GetDescendants()) do
-                    if not toezInteract:IsA("ProximityPrompt") then
-                        return
+        if Value == true then          
+            ezinst = true
+            task.spawn(function()
+                while ezinst and OrionLib:IsRunning() do
+                    for _, toezInteract in pairs(workspace:GetDescendants()) do
+                        if toezInteract:IsA("ProximityPrompt") then
+                            toezInteract.HoldDuration = "0"
+                            toezInteract.RequiresLineOfSight = false
+                            toezInteract.MaxActivationDistance = "12"
+                        end
                     end
-                    toezInteract.HoldDuration = "0"
-                    toezInteract.RequiresLineOfSight = false
-                    toezInteract.MaxActivationDistance = "12"
+                    task.wait(0.1)
                 end
-                task.wait(0.1)
-            end
-        end)
+            end)
+        else
+            ezinst = false
+        end
     end
 })
-Tab:AddToggle({ -- 轻松交互
+Tab:AddToggle({ -- 轻松修复
     Name = "轻松修复",
     Default = true,
     Callback = function(Value)
@@ -261,6 +261,31 @@ Tab:AddToggle({ -- 轻松交互
                 local FixGame = PlayerGui.Main.FixMinigame.Background.Frame.Middle
                 FixGame.Circle.Rotation = FixGame.Pointer.Rotation - 20
                 task.wait()
+            end
+        end)
+    end
+})
+Tab:AddToggle({ -- 自动修复
+    Name = "自动修复",
+    Default = true,
+    Callback = function(Value)
+        if Value == false then
+            autofix = false
+            return
+        end
+        autofix = true
+        task.spawn(function()
+            for _, autofixthing in pairs(workspace.Rooms:GetDescendants()) do
+                if autofixthing.Name == "EncounterGenerator" then
+                    autofixthing.RemoteFunction:InvokeServer("")
+                    while autofixthing.Fixed ~= 100 do
+                        autofixthing.RemoteEvent:FireServer("")
+                        autofixthing.RemoteEvent:FireServer("")
+                        autofixthing.RemoteEvent:FireServer("")
+                        autofixthing.RemoteEvent:FireServer("")
+                        task.wait()
+                    end
+                end
             end
         end)
     end
@@ -936,6 +961,14 @@ others:AddButton({
         Notify("注入Infinity Yield", "尝试注入中")
         loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
         Notify("注入Infinity Yield", "注入完成(如果没有加载则重试)")
+    end
+})
+others:AddButton({
+    Name = "注入Dex v4(较旧)",
+    Callback = function()
+        Notify("注入Dex v4", "尝试注入中")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/LorekeeperZinnia/Dex/refs/heads/master/main.lua'))()
+        Notify("注入Dex v4", "注入完成(如果没有加载则重试)")
     end
 })
 others:AddButton({

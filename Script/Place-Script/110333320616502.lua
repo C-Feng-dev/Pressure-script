@@ -15,8 +15,8 @@ OrionLib:MakeNotification({
 })
 local Connects = {}
 local noautoinst = {}
-local Entities = {"Rush",}
 local Players = game:GetService("Players") -- 玩家服务
+local RS = game:GetService("ReplicatedStorage")
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
 local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
 local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
@@ -93,27 +93,6 @@ local function unesp(name) -- unEsp物品用
         end
     end
 end
-local function NotifiEntity(inst,EntityName,NotifyName,mode)
-    if mode == "spawn" then
-        if inst.Name == EntityName and OrionLib:IsRunning() then
-            if OrionLib.Flags.NotifyEntities.Value then
-                Notify("实体提醒",NotifyName .. "出现")
-            end        
-            if OrionLib.Flags.chatNotifyEntities.Value then
-                chatMessage(NotifyName .. "出现")
-            end
-        end
-    elseif mode == "remove" then
-        if inst.Name == EntityName and OrionLib:IsRunning() then
-            if OrionLib.Flags.NotifyEntities.Value then
-                Notify("实体提醒",NotifyName .. "消失")
-            end        
-            if OrionLib.Flags.chatNotifyEntities.Value then
-                chatMessage(NotifyName .. "消失")
-            end
-        end
-    end
-end
 local function createPlatform(name, sizeVector3,positionVector3) -- 创建平台-Vector3.new(x,y,z)
     if Platform then
         Platform:Destroy() -- 移除多余平台
@@ -146,6 +125,27 @@ end
 local function chatMessage(chat) -- 发送信息
     game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(tostring(chat))
 end
+local function NotifiEntity(inst,EntityName,NotifyName,mode)
+    if mode == "spawn" then
+        if inst.Name == EntityName and OrionLib:IsRunning() then
+            if OrionLib.Flags.NotifyEntities.Value then
+                Notify("实体提醒",NotifyName .. "出现")
+            end        
+            if OrionLib.Flags.chatNotifyEntities.Value then
+                chatMessage(NotifyName .. "出现")
+            end
+        end
+    elseif mode == "remove" then
+        if inst.Name == EntityName and OrionLib:IsRunning() then
+            if OrionLib.Flags.NotifyEntities.Value then
+                Notify("实体提醒",NotifyName .. "消失")
+            end        
+            if OrionLib.Flags.chatNotifyEntities.Value then
+                chatMessage(NotifyName .. "消失")
+            end
+        end
+    end
+end
 local function loadfinish() -- 加载完成后向控制台发送
     print("--------------------------加载完成--------------------------")
     print("--Grace Script已加载完成")
@@ -172,13 +172,23 @@ local Tab = Window:MakeTab({
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
+local Esp = Window:MakeTab({
+    Name = "透视",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
 local Del = Window:MakeTab({
     Name = "删除",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Esp = Window:MakeTab({
-    Name = "透视",
+local another = Window:MakeTab({
+    Name = "杂项",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+local others = Window:MakeTab({
+    Name = "其他",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
@@ -212,26 +222,52 @@ local Section = Tab:AddSection({
 Tab:AddToggle({ -- 轻松交互
     Name = "自动拉杆",
     Default = false,
-    Callback = function(Value)
-        if Value == false then
-            autoinst = false
-            return
-        end
-        autoinst = true
-        task.spawn(function()
-            while autoinst and OrionLib:IsRunning() do -- 交互-循环
-                for _, inst in pairs(workspace.Rooms:GetDescendants()) do
-                    if inst.Name == "Breaker" then
-                        inst.Touched:FireServer()
-                    end
-                end
-                task.wait(0.05)
-            end
-        end)
-    end
+    Flag = "autolever"
 })
 local Section = Tab:AddSection({
     Name = "其他"
+})
+Tab:AddButton({ -- 自动过关
+    Name = "自动过关",
+    Callback = function()
+        if OrionLib.Flags.sureautogame.Value then
+            local suc,err = pcall(function()
+                RS.KillClient:Destroy()
+                RS.SendGoatman:Destroy()
+                RS.SendRush:Destroy()
+                RS.SendSorrow:Destroy()
+                RS.SendWorm:Destroy()
+                RS.Worm:Destroy()
+                RS.elkman:Destroy()
+                RS.Rush:Destroy()
+            end)
+            if not suc then
+                warn("删除RS内物品时出错:" .. err .. ",可能已删除")
+            end
+            task.spawn(function()
+                while OrionLib.Flags.sureautogame.Value do
+                    for _, touch in ipairs(workspace:GetDescendants()) do
+                        if touch:IsA("TouchTransmitter") then
+                            x = touch:FindFirstAncestorWhichIsA("Part")
+                            if x then
+                                if game:GetService("Players").LocalPlayer:DistanceFromCharacter(x.Position) <= 12 then
+                                    x.CFrame = Character:FindFirstChildWhichIsA("BasePart").CFrame
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.2)
+                end
+            end)
+        else
+            Notify("自动过关","请二次确认后再使用")
+        end
+    end
+})
+Tab:AddToggle({ -- 玩家提醒
+    Name = "自动过关(二次确认)",
+    Default = false,
+    Flag = "sureautogame"
 })
 Tab:AddToggle({ -- 高亮
     Name = "高亮(低质量)",
@@ -254,6 +290,35 @@ Tab:AddToggle({ -- 高亮
             Light.ColorShift_Bottom = Color3.new(0, 0, 0)
             Light.ColorShift_Top = Color3.new(0, 0, 0)
         end
+    end
+})
+Tab:AddButton({
+    Name = "伪God mode",
+    Callback = function()
+        local suc,err = pcall(function()
+            RS.KillClient:Destroy()
+        end)
+            if not suc then
+            Notify("伪God mode","删除时出错,可能已删除")
+            warn("删除时出错:" .. err .. ",可能已删除")
+        end
+    end
+})
+Tab:AddButton({
+    Name = "返回大厅",
+    Callback = function()
+        game.ReplicatedStorage.byebyemyFRIENDbacktothelobby:FireServer()        
+    end
+})
+Tab:AddSlider({
+	Name = "视场角",
+	Min = 0,
+	Max = 20,
+	Default = 0,
+	Increment = 1,
+	ValueName = "+",
+	Callback = function(Value)
+        game:GetService("ReplicatedFirst").CamFOV.Value = Value
     end
 })
 Tab:AddToggle({ -- 玩家提醒
@@ -280,26 +345,153 @@ Esp:AddToggle({ -- door
             table.insert(Connects,esp)
             task.spawn(function()
                 while OrionLib:IsRunning() do
-                    if doorsesp == false then
-                        esp:Disconnect()
-                        unesp("门")
-                        for _, hl in pairs(PlayerGui:GetChildren()) do
-                            if hl.Name == "门透视高光" then
-                                hl:Destroy()                            
-                            end
-                        end
+                    if doorsesp ~= true then
                         break
-                    end   
+                    end
+                    for _, hl in pairs(PlayerGui:GetChildren()) do
+                        if hl.Name == "门透视高光" then
+                            hl:Destroy()   
+                        end   
+                    end
                     task.wait(0.1)
                 end
             end)
         else
             doorsesp = false
+            esp:Disconnect()
+            unesp("门")
         end
     end
 })
+Del:AddToggle({
+    Name = "删除蓝眼",
+    Default = true,
+    Flag = "noblueeyes"
+})
+Del:AddButton({
+    Name = "删除Goatman",
+    Callback = function()
+        local suc,err = pcall(function()
+            RS.SendGoatman:Destroy()
+        end)
+            if not suc then
+            Notify("删除Goatman","删除时出错,可能已删除")
+            warn("删除时出错:" .. err .. ",可能已删除")
+        end
+    end
+})
+Del:AddButton({ 
+    Name = "删除Rush",
+    Callback = function()
+        local suc,err = pcall(function()
+            RS.SendRush:Destroy()
+            RS.Rush:Destroy()
+        end)
+            if not suc then
+            Notify("删除Rush","删除时出错,可能已删除")
+            warn("删除时出错:" .. err .. ",可能已删除")
+        end
+    end
+})
+Del:AddButton({ 
+    Name = "删除Sorrow",
+    Callback = function()
+        local suc,err = pcall(function()
+            RS.SendSorrow:Destroy()
+        end)
+            if not suc then
+            Notify("删除Sorrow","删除时出错,可能已删除")
+            warn("删除时出错:" .. err .. ",可能已删除")
+        end
+    end
+})
+Del:AddButton({ 
+    Name = "删除Worm",
+    Callback = function()
+        local suc,err = pcall(function()
+            RS.SendWorm:Destroy()
+            RS.Worm:Destroy()
+        end)
+            if not suc then
+            Notify("删除Worm","删除时出错,可能已删除")
+            warn("删除时出错:" .. err .. ",可能已删除")
+        end
+    end
+})
+Del:AddButton({ 
+    Name = "删除elkman",
+    Callback = function()
+        local suc,err = pcall(function()
+            RS.elkman:Destroy()
+        end)
+            if not suc then
+            Notify("删除elkman","删除时出错,可能已删除")
+            warn("删除时出错:" .. err .. ",可能已删除")
+        end
+    end
+})
+local Section = another:AddSection({
+    Name = "倒计时设置"
+})
+another:AddLabel("需要至少激活一次倒计时才可使用")
+another:AddTextbox({
+	Name = "计时器时间",
+	TextDisappear = true,
+	Callback = function(Value)
+		workspace.DEATHTIMER.Value = Value
+	end	  
+})
+others:AddButton({
+    Name = "注入Infinity Yield",
+    Callback = function()
+        Notify("注入Infinity Yield", "尝试注入中")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        Notify("注入Infinity Yield", "注入完成(如果没有加载则重试)")
+    end
+})
+others:AddButton({
+    Name = "注入Dex v2 white(会卡顿)",
+    Callback = function()
+        Notify("注入Dex v2 white", "尝试注入中")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0'))()
+        Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
+    end
+})
+others:AddButton({
+    Name = "删除此窗口",
+    Callback = function()
+        workspaceDA:Disconnect()
+        workspaceDR:Disconnect()
+        workspaceCA:Disconnect()
+        workspaceCR:Disconnect()
+        for _, Connection in pairs(EspConnects) do
+            Connection:Disconnect()
+        end
+        OrionLib:Destroy()
+    end
+})
+others:AddButton({
+    Name = "加入随机大厅",
+    Callback = function()
+        Notify("加入游戏", "尝试加入中")
+        TeleportService:Teleport(12411473842)
+    end
+})
+local Section = others:AddSection({
+    Name = "关于"
+})
+others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
+others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
+others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
+others:AddParagraph("此服务器UUID为:", game.JobId)
 local workspaceDA = workspace.DescendantAdded:Connect(function(inst)
     NotifiEntity(inst,"Rush","Rush(粉怪)","spawn")
+    if inst.Name == "eyes" and OrionLib.Flags.noblueeyes.Value then
+        inst:FireServer()
+    end
+    if inst.Name == "Touched" and OrionLib.Flags.autolever.Value then
+        inst:FireServer()
+    end
 end)
 local workspaceDR = workspace.DescendantRemoving:Connect(function(inst)
     NotifiEntity(inst,"Rush","Rush(粉怪)","remove")

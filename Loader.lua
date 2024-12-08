@@ -1,4 +1,5 @@
 print("--------------------成功注入，正在加载中--------------------")
+local loader = true
 local baseUrl = "https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/"
 local function load(url)
     loadstring(game:HttpGet(url))()
@@ -14,6 +15,7 @@ else
         return load(baseUrl .. "Place-Script/" .. game.PlaceId .. ".lua")
     end)
     if suc == false then
-        warn("注入时出现错误,报错为:" .. err .. ",已停止加载")
+        warn("注入时出现错误,报错为:" .. err .. ",已加载中心")
+        load("https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/Tab/Hub.lua")
     end
-end 
+end
