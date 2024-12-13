@@ -219,31 +219,41 @@ Tab:AddButton({ -- 手动返回
 local Section = Tab:AddSection({
     Name = "交互"
 })
+Tab:AddSlider({
+    Name = "自动交互距离",
+    Min = 5,
+    Max = 30,
+    Default = 20,
+    Increment = 1,
+    Flag = "autoinstdistance"
+})
 Tab:AddToggle({ -- 轻松交互
     Name = "自动拉杆",
     Default = false,
-    Flag = "autolever"
+    Callback = function(Value)
+        if Value == true then
+            autolever = true
+            for _, touch in pairs(workspace.Rooms:GetDescendants()) do
+                if not touch.Name == "Touched" then
+                    return
+                end
+                if Players.LocalPlayer:DistanceFromCharacter(touch.base.Position) == OrionLib.Flags.autoinstdistance.Value then
+                    touch:FireServer()
+                end
+            end
+        else
+            autolever = false
+        end
+    end
 })
 local Section = Tab:AddSection({
     Name = "其他"
 })
+Tab:AddLabel("请删除所有实体生成再使用自动过关")
 Tab:AddButton({ -- 自动过关
     Name = "自动过关",
     Callback = function()
         if OrionLib.Flags.sureautogame.Value then
-            local suc,err = pcall(function()
-                RS.KillClient:Destroy()
-                RS.SendGoatman:Destroy()
-                RS.SendRush:Destroy()
-                RS.SendSorrow:Destroy()
-                RS.SendWorm:Destroy()
-                RS.Worm:Destroy()
-                RS.elkman:Destroy()
-                RS.Rush:Destroy()
-            end)
-            if not suc then
-                warn("删除RS内物品时出错:" .. err .. ",可能已删除")
-            end
             task.spawn(function()
                 while OrionLib.Flags.sureautogame.Value do
                     for _, touch in ipairs(workspace:GetDescendants()) do
@@ -251,7 +261,10 @@ Tab:AddButton({ -- 自动过关
                             x = touch:FindFirstAncestorWhichIsA("Part")
                             if x then
                                 if game:GetService("Players").LocalPlayer:DistanceFromCharacter(x.Position) <= 12 then
+                                    local temp = x.CFrame
                                     x.CFrame = Character:FindFirstChildWhichIsA("BasePart").CFrame
+                                    task.wait(0.1)
+                                    x.CFrame = temp
                                 end
                             end
                         end
@@ -289,18 +302,6 @@ Tab:AddToggle({ -- 高亮
             Light.Ambient = Color3.new(0, 0, 0)
             Light.ColorShift_Bottom = Color3.new(0, 0, 0)
             Light.ColorShift_Top = Color3.new(0, 0, 0)
-        end
-    end
-})
-Tab:AddButton({
-    Name = "伪God mode",
-    Callback = function()
-        local suc,err = pcall(function()
-            RS.KillClient:Destroy()
-        end)
-            if not suc then
-            Notify("伪God mode","删除时出错,可能已删除")
-            warn("删除时出错:" .. err .. ",可能已删除")
         end
     end
 })
@@ -346,6 +347,7 @@ Esp:AddToggle({ -- door
             task.spawn(function()
                 while OrionLib:IsRunning() do
                     if doorsesp ~= true then
+                        esp:Disconnect()
                         break
                     end
                     for _, hl in pairs(PlayerGui:GetChildren()) do
@@ -358,8 +360,21 @@ Esp:AddToggle({ -- door
             end)
         else
             doorsesp = false
-            esp:Disconnect()
             unesp("门")
+        end
+    end
+})
+Del:AddLabel("使用God mode被某些实体击杀时可能会导致bug")
+Del:AddButton({
+    Name = "God mode",
+    Callback = function()
+        local suc,err = pcall(function()
+            RS.KillClient:Destroy()
+            Notify("伪God mode","成功删除")
+        end)
+            if not suc then
+            Notify("伪God mode","删除时出错,可能已删除")
+            warn("删除时出错:" .. err .. ",可能已删除")
         end
     end
 })
@@ -368,11 +383,37 @@ Del:AddToggle({
     Default = true,
     Flag = "noblueeyes"
 })
+Del:AddToggle({
+    Name = "删除蓝眼",
+    Default = true,
+    Flag = "noredeyes"
+})
+Del:AddToggle({ 
+    Name = "删除Rush",
+    Default = true,
+    Flag = "norush"
+})
+Del:AddToggle({ 
+    Name = "删除Worm",
+    Default = true,
+    Flag = "noworm"
+})
+Del:AddToggle({ 
+    Name = "删除elkman",
+    Default = true,
+    Flag = "noelkman"
+})
+Del:AddToggle({ 
+    Name = "删除Dozer",
+    Default = true,
+    Flag = "nodozer"
+})
 Del:AddButton({
-    Name = "删除Goatman",
+    Name = "删除Goatman生成",
     Callback = function()
         local suc,err = pcall(function()
             RS.SendGoatman:Destroy()
+            Notify("删除Goatman","成功删除")
         end)
             if not suc then
             Notify("删除Goatman","删除时出错,可能已删除")
@@ -381,11 +422,12 @@ Del:AddButton({
     end
 })
 Del:AddButton({ 
-    Name = "删除Rush",
+    Name = "删除Rush生成",
     Callback = function()
         local suc,err = pcall(function()
             RS.SendRush:Destroy()
             RS.Rush:Destroy()
+            Notify("删除Rush","成功删除")
         end)
             if not suc then
             Notify("删除Rush","删除时出错,可能已删除")
@@ -394,10 +436,11 @@ Del:AddButton({
     end
 })
 Del:AddButton({ 
-    Name = "删除Sorrow",
+    Name = "删除Sorrow生成",
     Callback = function()
         local suc,err = pcall(function()
             RS.SendSorrow:Destroy()
+            Notify("删除Sorrow","成功删除")
         end)
             if not suc then
             Notify("删除Sorrow","删除时出错,可能已删除")
@@ -406,26 +449,15 @@ Del:AddButton({
     end
 })
 Del:AddButton({ 
-    Name = "删除Worm",
+    Name = "删除Worm生成",
     Callback = function()
         local suc,err = pcall(function()
             RS.SendWorm:Destroy()
             RS.Worm:Destroy()
+            Notify("删除Worm","成功删除")
         end)
             if not suc then
             Notify("删除Worm","删除时出错,可能已删除")
-            warn("删除时出错:" .. err .. ",可能已删除")
-        end
-    end
-})
-Del:AddButton({ 
-    Name = "删除elkman",
-    Callback = function()
-        local suc,err = pcall(function()
-            RS.elkman:Destroy()
-        end)
-            if not suc then
-            Notify("删除elkman","删除时出错,可能已删除")
             warn("删除时出错:" .. err .. ",可能已删除")
         end
     end
@@ -462,19 +494,11 @@ others:AddButton({
     Callback = function()
         workspaceDA:Disconnect()
         workspaceDR:Disconnect()
-        workspaceCA:Disconnect()
-        workspaceCR:Disconnect()
+        PlayersGuiDR:Disconnect()
         for _, Connection in pairs(EspConnects) do
             Connection:Disconnect()
         end
         OrionLib:Destroy()
-    end
-})
-others:AddButton({
-    Name = "加入随机大厅",
-    Callback = function()
-        Notify("加入游戏", "尝试加入中")
-        TeleportService:Teleport(12411473842)
     end
 })
 local Section = others:AddSection({
@@ -486,13 +510,32 @@ others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
 others:AddParagraph("此服务器UUID为:", game.JobId)
 local workspaceDA = workspace.DescendantAdded:Connect(function(inst)
     NotifiEntity(inst,"Rush","Rush(粉怪)","spawn")
-    if inst.Name == "eyes" and OrionLib.Flags.noblueeyes.Value then
-        inst:FireServer()
+    NotifiEntity(inst,"Worm","Worm(白怪)","spawn")
+    if inst.Name == "Rush" and OrionLib.Flags.norush.Value then
+        inst:Destroy()
     end
-    if inst.Name == "Touched" and OrionLib.Flags.autolever.Value then
+    if inst.Name == "Worm" and OrionLib.Flags.noworm.Value then
+        inst:Destroy()
+    end
+    if inst.Name == "eye" and OrionLib.Flags.noblueeyes.Value then
+        inst:Destroy()
+    end
+    if inst.Name == "eyePrime" and OrionLib.Flags.noredeyes.Value then
+        inst:Destroy()
+    end
+    if inst.Name == "elkman" and OrionLib.Flags.noelkman.Value then
+        inst:Destroy()
+    end
+    if inst.Name == "Touched" and autolever then
         inst:FireServer()
     end
 end)
 local workspaceDR = workspace.DescendantRemoving:Connect(function(inst)
     NotifiEntity(inst,"Rush","Rush(粉怪)","remove")
+    NotifiEntity(inst,"Worm","Worm(白怪)","remove")
+end)
+local PlayersGuiDR = PlayerGui.DescendantAdded:Connect(function(inst)
+    if inst.Name == "smilegui" and OrionLib.Flags.nodozer.Value then
+        inst:Destroy()
+    end
 end)
