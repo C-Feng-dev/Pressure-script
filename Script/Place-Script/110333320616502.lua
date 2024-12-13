@@ -93,33 +93,9 @@ local function unesp(name) -- unEsp物品用
         end
     end
 end
-local function createPlatform(name, sizeVector3,positionVector3) -- 创建平台-Vector3.new(x,y,z)
-    if Platform then
-        Platform:Destroy() -- 移除多余平台
-    end
-    Platform = Instance.new("Part")
-    Platform.Name =name
-    Platform.Size = sizeVector3
-    Platform.Position = positionVector3
-    Platform.Anchored = true
-    Platform.Parent = workspace
-    Platform.Transparency = 1
-    Platform.CastShadow = false
-end
-local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
-    if player.Character:FindFirstChild("HumanoidRootPart") then
-        if saveposition then
-            playerPositions[player.UserId] = player.Character.HumanoidRootPart.CFrame
-        end
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(toPositionVector3)
-    end
-end
-local function teleportPlayerBack(player) -- 返回玩家 
-    if playerPositions[player.UserId] then
-        player.Character.HumanoidRootPart.CFrame = playerPositions[player.UserId]
-        playerPositions[player.UserId] = nil -- 清除坐标
-    else
-        warn("返回失败!存储玩家原坐标的数值无法用于返回")
+local function teleportPlayerTo(toPositionVector3) -- 传送玩家-Vector3.new(x,y,z)
+    if Character:FindFirstChild("HumanoidRootPart") then
+        Character.HumanoidRootPart.CFrame = toPositionVector3
     end
 end
 local function chatMessage(chat) -- 发送信息
@@ -204,45 +180,62 @@ Tab:AddToggle({
     Flag = "chatNotifyEntities",
     Save = true
 })
-Tab:AddToggle({
-    Name = "自动躲避",
-    Default = false,
-    Flag = "avoid",
-    Save = true
-})
-Tab:AddButton({ -- 手动返回
-    Name = "手动返回",
-    Callback = function()
-        teleportPlayerBack(Players.LocalPlayer)
-    end
-})
 local Section = Tab:AddSection({
     Name = "交互"
 })
 Tab:AddSlider({
-    Name = "自动交互距离",
+    Name = "自动拉杆距离",
     Min = 5,
     Max = 30,
     Default = 20,
     Increment = 1,
     Flag = "autoinstdistance"
 })
-Tab:AddToggle({ -- 轻松交互
+Tab:AddToggle({
     Name = "自动拉杆",
     Default = false,
     Callback = function(Value)
         if Value == true then
             autolever = true
-            for _, touch in pairs(workspace.Rooms:GetDescendants()) do
-                if not touch.Name == "Touched" then
-                    return
-                end
-                if Players.LocalPlayer:DistanceFromCharacter(touch.base.Position) == OrionLib.Flags.autoinstdistance.Value then
-                    touch:FireServer()
-                end
-            end
         else
             autolever = false
+        end
+        while autolever do
+            for _, breaker in pairs(workspace.Rooms:GetDescendants()) do
+                if breaker.Name == "Breaker" then
+                    if Players.LocalPlayer:DistanceFromCharacter(breaker.base.Position) <= OrionLib.Flags.autoinstdistance.Value then
+                        breaker.Touched:FireServer()
+                    end
+                end
+            end
+            task.wait(0.1)
+        end
+    end
+})
+Tab:AddSlider({
+    Name = "自动开门距离",
+    Min = 5,
+    Max = 30,
+    Default = 20,
+    Increment = 1,
+    Flag = "autodoordistance"
+})
+Tab:AddToggle({
+    Name = "自动开门(黄门)",
+    Default = false,
+    Callback = function(Value)
+        if Value == true then
+            autodoor = true
+        else
+            autodoor = false
+        end
+        while autodoor do
+            for _, door in pairs(workspace.Rooms:GetDescendants()) do
+                if door.Name == "TouchInterest" and door.Parent.Name == "kickBox" and Players.LocalPlayer:DistanceFromCharacter(door..Position) <= OrionLib.Flags.autodoordistance.Value then
+                    door.Parent.Parent.RemoteEvent:FireServer()
+                end
+            end
+            task.wait(0.1)
         end
     end
 })
@@ -256,20 +249,16 @@ Tab:AddButton({ -- 自动过关
         if OrionLib.Flags.sureautogame.Value then
             task.spawn(function()
                 while OrionLib.Flags.sureautogame.Value do
-                    for _, touch in ipairs(workspace:GetDescendants()) do
-                        if touch:IsA("TouchTransmitter") then
-                            x = touch:FindFirstAncestorWhichIsA("Part")
-                            if x then
-                                if game:GetService("Players").LocalPlayer:DistanceFromCharacter(x.Position) <= 12 then
-                                    local temp = x.CFrame
-                                    x.CFrame = Character:FindFirstChildWhichIsA("BasePart").CFrame
-                                    task.wait(0.1)
-                                    x.CFrame = temp
-                                end
-                            end
+                    local hitboxes = {}
+                    for _, hitbox in pairs(workspace.Rooms:GetDescendants()) do
+                        if hitbox.Name == "hitBox" then
+                            table.insert(hitboxes,hitbox)
                         end
                     end
-                    task.wait(0.2)
+                    for _, i in pairs(hitboxes) do
+                        teleportPlayerTo(i.CFrame)
+                    end
+                    task.wait(0.02)
                 end
             end)
         else
@@ -334,13 +323,17 @@ Esp:AddToggle({ -- door
         if Value then
             doorsesp = true
             for _, themodel in pairs(workspace:GetDescendants()) do
-                if themodel.Parent.Name == "Door" then
-                    espmodel(themodel,"Door","门","0","1","0",true)
+                if themodel.Name == "Door" then
+                    if themodel.Parent.Name == "Door" then
+                        espmodel(themodel,"Door","门","0","1","0",true)
+                    end
                 end
             end
             local esp = workspace.DescendantAdded:Connect(function(themodel)
-                if themodel.Parent.Name == "Door" then
-                    espmodel(themodel,"Door","门","0","1","0",true)
+                if themodel.Name == "Door" then
+                    if themodel.Parent.Name == "Door" then
+                        espmodel(themodel,"Door","门","0","1","0",true)
+                    end
                 end
             end)
             table.insert(Connects,esp)
@@ -384,7 +377,7 @@ Del:AddToggle({
     Flag = "noblueeyes"
 })
 Del:AddToggle({
-    Name = "删除蓝眼",
+    Name = "删除红眼",
     Default = true,
     Flag = "noredeyes"
 })
@@ -495,7 +488,7 @@ others:AddButton({
         workspaceDA:Disconnect()
         workspaceDR:Disconnect()
         PlayersGuiDR:Disconnect()
-        for _, Connection in pairs(EspConnects) do
+        for _, Connection in pairs(Connects) do
             Connection:Disconnect()
         end
         OrionLib:Destroy()
@@ -513,6 +506,7 @@ local workspaceDA = workspace.DescendantAdded:Connect(function(inst)
     NotifiEntity(inst,"Worm","Worm(白怪)","spawn")
     if inst.Name == "Rush" and OrionLib.Flags.norush.Value then
         inst:Destroy()
+        RS.SendRush.Carnation.tinnitus.Playing = false
     end
     if inst.Name == "Worm" and OrionLib.Flags.noworm.Value then
         inst:Destroy()
@@ -525,9 +519,6 @@ local workspaceDA = workspace.DescendantAdded:Connect(function(inst)
     end
     if inst.Name == "elkman" and OrionLib.Flags.noelkman.Value then
         inst:Destroy()
-    end
-    if inst.Name == "Touched" and autolever then
-        inst:FireServer()
     end
 end)
 local workspaceDR = workspace.DescendantRemoving:Connect(function(inst)
