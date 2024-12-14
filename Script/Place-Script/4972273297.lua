@@ -20,20 +20,20 @@ OrionLib:MakeNotification({
     Image = "rbxassetid://4483345998",
     Time = 4
 })
-local Window = OrionLib:MakeWindow({
+Window = OrionLib:MakeWindow({
     IntroText = "Regretevator",
     Name = "Regretevator",
     HidePremium = false,
     SaveConfig = true,
     ConfigFolder = "Cfg/Regretevator"
 })
-local function Notify(name,content,time,Sound,Sound) -- 信息
+local function Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
         Image = "rbxassetid://4483345998",
         Time = time or "3",
-        Sound = Sound,
+        SoundId = SoundId,
         Sound = Sound
     })
 end
@@ -125,11 +125,6 @@ local TP = Window:MakeTab({
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local others = Window:MakeTab({
-    Name = "其他",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
 local Section = Tab:AddSection({
     Name = "通用"
 })
@@ -216,38 +211,7 @@ TP:AddButton({
         teleportPlayerTo(player,toPositionVector3,saveposition)
     end
 })
-others:AddButton({
-    Name = "注入Infinity Yield",
-    Callback = function()
-        Notify("注入Infinity Yield", "尝试注入中")
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-        Notify("注入Infinity Yield", "注入完成(如果没有加载则重试)")
-    end
-})
-others:AddButton({
-    Name = "注入Dex v2 white(会卡顿)",
-    Callback = function()
-        Notify("注入Dex v2 white", "尝试注入中")
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0'))()
-        Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
-    end
-})
-others:AddButton({
-    Name = "删除此窗口",
-    Callback = function()
-        for _, Connection in pairs(EspConnects) do
-            Connection:Disconnect()
-        end
-        OrionLib:Destroy()
-    end
-})
-local Section = others:AddSection({
-    Name = "关于"
-})
-others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
-others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
-others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
-others:AddParagraph("此服务器UUID为:", game.JobId)
+loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/Tabs/OrionGui-Others.lua'))()
 Players.PlayerAdded:Connect(function(player)
     if OrionLib.Flags.PlayerNotifications.Value then
         if player:IsFriendsWith(Players.LocalPlayer.UserId) then
