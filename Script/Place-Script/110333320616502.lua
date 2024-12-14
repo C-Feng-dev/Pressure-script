@@ -59,7 +59,7 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
     txt.Position = UDim2.new(0.5, 0, 0.7, 0)
     txt.Text = name
     Instance.new("UIStroke", txt)
-    if hlset then
+    --[[if hlset then
         local hl = Instance.new("Highlight",PlayerGui)
         hl.Name = name .. "透视高光"
         hl.Adornee = theobject
@@ -74,7 +74,7 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
             end
             task.wait()
         end
-    end)
+    end)]]
 end
 local function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
@@ -96,10 +96,12 @@ end
 local function chatMessage(chat) -- 发送信息
     game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(tostring(chat))
 end
-local function NotifiEntity(inst,EntityName,NotifyName,mode)
+local function NotifiEntity(inst,EntityName,NotifyName,mode,delflag)
     if mode == "spawn" then
         if inst.Name == EntityName and OrionLib:IsRunning() then
-            if OrionLib.Flags.NotifyEntities.Value then
+            if delflag then
+                Notify("实体删除",NotifyName .. "已被删除")
+            elseif OrionLib.Flags.NotifyEntities.Value then
                 Notify("实体提醒",NotifyName .. "出现")
             end        
             if OrionLib.Flags.chatNotifyEntities.Value then
@@ -109,7 +111,11 @@ local function NotifiEntity(inst,EntityName,NotifyName,mode)
     elseif mode == "remove" then
         if inst.Name == EntityName and OrionLib:IsRunning() then
             if OrionLib.Flags.NotifyEntities.Value then
-                Notify("实体提醒",NotifyName .. "消失")
+                if delflag then
+                    Notify("实体删除",NotifyName .. "已被删除")
+                else
+                    Notify("实体提醒",NotifyName .. "消失")
+                end
             end        
             if OrionLib.Flags.chatNotifyEntities.Value then
                 chatMessage(NotifyName .. "消失")
@@ -128,13 +134,17 @@ local function loadfinish() -- 加载完成后向控制台发送
     print("--------------------------欢迎使用--------------------------")
 end
 --Function结束-其他
-task.spawn(function()--关闭esp的Connect
+task.spawn(function()--关闭设置
 	while (OrionLib:IsRunning()) do
 		task.wait()
 	end
 	for _, Connection in pairs(Connects) do
 		Connection:Disconnect()
 	end
+    local t = {"autodoor","autolever","autoinst","ezinst"}
+    for _, v in pairs(t) do
+        v = false
+    end
 end)
 loadfinish()--其他结束->加载完成信息
 Notify("加载完成", "已成功加载")
@@ -178,14 +188,52 @@ Tab:AddToggle({
 local Section = Tab:AddSection({
     Name = "交互"
 })
+Tab:AddLabel("交互距离超过40可能会导致交互bug")
+Tab:AddSlider({
+    Name = "交互距离",
+    Min = 12,
+    Max = 100,
+    Default = 12,
+    Increment = 1,
+    Flag = "autoinstdistance"
+})
 Tab:AddSlider({
     Name = "自动拉杆距离",
     Min = 5,
-    Max = 40
-    ,
+    Max = 100,
     Default = 20,
     Increment = 1,
-    Flag = "autoinstdistance"
+    Flag = "autoleverdistance"
+})
+Tab:AddSlider({
+    Name = "自动开门距离",
+    Min = 5,
+    Max = 100,
+    Default = 20,
+    Increment = 1,
+    Flag = "autodoordistance"
+})
+Tab:AddToggle({ -- 轻松交互
+    Name = "修改交互距离",
+    Default = true,
+    Callback = function(Value)  
+        if Value then          
+            ezinst = true
+            task.spawn(function()
+                while ezinst and OrionLib:IsRunning() do
+                    for _, toezInteract in pairs(workspace.Rooms:GetDescendants()) do
+                        if toezInteract:IsA("ProximityPrompt") then
+                            toezInteract.RequiresLineOfSight = false
+                            toezInteract.MaxActivationDistance = OrionLib.Flags.autoinstdistance.Value
+                        end
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        else
+            ezinst = false
+        end
+    end
 })
 Tab:AddToggle({
     Name = "自动拉杆",
@@ -199,7 +247,7 @@ Tab:AddToggle({
         while autolever do  
             for _, breaker in pairs(workspace.Rooms:GetDescendants()) do
                 if breaker.Name == "Breaker" then
-                    if Players.LocalPlayer:DistanceFromCharacter(breaker:WaitForChild("base").Position) <= OrionLib.Flags.autoinstdistance.Value then
+                    if Players.LocalPlayer:DistanceFromCharacter(breaker:WaitForChild("base").Position) <= OrionLib.Flags.autoleverdistance.Value then
                         breaker.Touched:FireServer()
                     end
                 end
@@ -207,14 +255,6 @@ Tab:AddToggle({
             task.wait(0.1)
         end
     end
-})
-Tab:AddSlider({
-    Name = "自动开门距离",
-    Min = 5,
-    Max = 40,
-    Default = 20,
-    Increment = 1,
-    Flag = "autodoordistance"
 })
 Tab:AddToggle({
     Name = "自动开门(黄门)",
@@ -322,14 +362,22 @@ Esp:AddToggle({
             for _, themodel in pairs(workspace:GetDescendants()) do
                 if themodel.Name == "Door" then
                     if themodel.Parent.Parent.Name == "Rooms" then--第一个Parent为房间号
-                        createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
+                        if themodel:WaitForChild("Door"):IsA("Model") then
+                            createBilltoesp(themodel:WaitForChild("Door"),"门", Color3.new(0,1,0),true)
+                        elseif themodel:WaitForChild("Door"):IsA("Part") then
+                            createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
+                        end
                     end
                 end
             end
             local esp = workspace.DescendantAdded:Connect(function(themodel)
                 if themodel.Name == "Door" then
                     if themodel.Parent.Parent.Name == "Rooms" then
-                        createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
+                        if themodel:WaitForChild("Door"):IsA("Model") then
+                            createBilltoesp(themodel:WaitForChild("Door"),"门", Color3.new(0,1,0),true)
+                        elseif themodel:WaitForChild("Door"):IsA("Part") then
+                            createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
+                        end
                     end
                 end
             end)
@@ -363,14 +411,14 @@ Esp:AddToggle({ -- door
             for _, themodel in pairs(workspace:GetDescendants()) do
                 if themodel.Name == "Breaker" then
                     if themodel.Parent.Parent.Name == "Rooms" then
-                        createBilltoesp(themodel,"拉杆", Color3.new(0,1,0),false)
+                        createBilltoesp(themodel,"拉杆", Color3.new(1,0,0),false)
                     end
                 end
             end
             local esp = workspace.DescendantAdded:Connect(function(themodel)
                 if themodel.Name == "Breaker" then
                     if themodel.Parent.Parent.Name == "Rooms" then
-                        createBilltoesp(themodel,"拉杆", Color3.new(0,1,0),false)
+                        createBilltoesp(themodel,"拉杆", Color3.new(1,0,0),false)
                     end
                 end
             end)
@@ -392,6 +440,47 @@ Esp:AddToggle({ -- door
         else
             leveresp = false
             unesp("拉杆")
+        end
+    end
+})
+Esp:AddToggle({
+    Name = "安全区井口透视",
+    Default = true,
+    Callback = function(Value)
+        if Value then
+            SafeRoomVaultesp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                if themodel.Name == "VaultEntrance" then
+                    if themodel.Parent.Name == "SafeRoom" then--第一个Parent为房间号
+                        createBilltoesp(themodel:WaitForChild("Hinged"),"井口", Color3.new(0,1,0),true)
+                    end
+                end
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                if themodel.Name == "VaultEntrance" then
+                    if themodel.Parent.Name == "SafeRoom" then
+                        createBilltoesp(themodel:WaitForChild("Hinged"),"井口", Color3.new(0,1,0),true)
+                    end
+                end
+            end)
+            table.insert(Connects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if SafeRoomVaultesp ~= true then
+                        esp:Disconnect()
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "井口透视高光" then
+                                hl:Destroy()   
+                            end   
+                        end
+                        break
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        else
+            SafeRoomVaultesp = false
+            unesp("井口")
         end
     end
 })
@@ -548,15 +637,16 @@ others:AddLabel("此服务器上的游戏ID为:" .. game.GameId)
 others:AddLabel("此服务器上的游戏版本为:version_" .. game.PlaceVersion)
 others:AddLabel("此服务器位置ID为:" .. game.PlaceId)
 others:AddParagraph("此服务器UUID为:", game.JobId)
-local workspaceDA = workspace.DescendantAdded:Connect(function(inst)
-    NotifiEntity(inst,"Rush","Rush(粉怪)","spawn")
-    NotifiEntity(inst,"Worm","Worm(白怪)","spawn")
+workspaceDA = workspace.DescendantAdded:Connect(function(inst)
+    NotifiEntity(inst,"Rush","Rush(粉怪)","spawn",OrionLib.Flags.norush.Value)
+    NotifiEntity(inst,"Worm","Worm(白怪)","spawn",OrionLib.Flags.noworm.Value)
     if inst.Name == "Rush" and OrionLib.Flags.norush.Value then
         inst:Destroy()
         RS.SendRush.Carnation.tinnitus.Playing = false
     end
     if inst.Name == "Worm" and OrionLib.Flags.noworm.Value then
         inst:Destroy()
+        RS.SendWorm.Slugfish.tinnitus.Playing = false
     end
     if inst.Name == "eye" and OrionLib.Flags.noblueeyes.Value then
         inst:Destroy()
@@ -568,11 +658,11 @@ local workspaceDA = workspace.DescendantAdded:Connect(function(inst)
         inst:Destroy()
     end
 end)
-local workspaceDR = workspace.DescendantRemoving:Connect(function(inst)
-    NotifiEntity(inst,"Rush","Rush(粉怪)","remove")
-    NotifiEntity(inst,"Worm","Worm(白怪)","remove")
+workspaceDR = workspace.DescendantRemoving:Connect(function(inst)
+    NotifiEntity(inst,"Rush","Rush(粉怪)","remove",OrionLib.Flags.norush.Value)
+    NotifiEntity(inst,"Worm","Worm(白怪)","remove",OrionLib.Flags.noworm.Value)
 end)
-local PlayersGuiDR = PlayerGui.DescendantAdded:Connect(function(inst)
+PlayersGuiDR = PlayerGui.DescendantAdded:Connect(function(inst)
     if inst.Name == "smilegui" and OrionLib.Flags.nodozer.Value then
         inst:Destroy()
     end
