@@ -20,7 +20,7 @@ local RS = game:GetService("ReplicatedStorage")
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
 local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
 local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
-Window = OrionLib:MakeWindow({
+local Window = OrionLib:MakeWindow({
     IntroText = "Grace",
     Name = "Grace",
     HidePremium = false,
@@ -168,7 +168,6 @@ local another = Window:MakeTab({
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-
 Tab:AddToggle({
     Name = "实体提醒",
     Default = true,
