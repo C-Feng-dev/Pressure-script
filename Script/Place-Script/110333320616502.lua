@@ -76,11 +76,6 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
         end
     end)
 end
-local function espmodel(themodel,modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
-    if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
-        createBilltoesp(themodel, name, Color3.new(r,g,b),hlset)
-    end
-end
 local function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
         if esp.Name == name .. "esp" then
@@ -186,7 +181,8 @@ local Section = Tab:AddSection({
 Tab:AddSlider({
     Name = "自动拉杆距离",
     Min = 5,
-    Max = 30,
+    Max = 40
+    ,
     Default = 20,
     Increment = 1,
     Flag = "autoinstdistance"
@@ -200,10 +196,10 @@ Tab:AddToggle({
         else
             autolever = false
         end
-        while autolever do
+        while autolever do  
             for _, breaker in pairs(workspace.Rooms:GetDescendants()) do
                 if breaker.Name == "Breaker" then
-                    if Players.LocalPlayer:DistanceFromCharacter(breaker.base.Position) <= OrionLib.Flags.autoinstdistance.Value then
+                    if Players.LocalPlayer:DistanceFromCharacter(breaker:WaitForChild("base").Position) <= OrionLib.Flags.autoinstdistance.Value then
                         breaker.Touched:FireServer()
                     end
                 end
@@ -215,7 +211,7 @@ Tab:AddToggle({
 Tab:AddSlider({
     Name = "自动开门距离",
     Min = 5,
-    Max = 30,
+    Max = 40,
     Default = 20,
     Increment = 1,
     Flag = "autodoordistance"
@@ -231,7 +227,7 @@ Tab:AddToggle({
         end
         while autodoor do
             for _, door in pairs(workspace.Rooms:GetDescendants()) do
-                if door.Name == "TouchInterest" and door.Parent.Name == "kickBox" and Players.LocalPlayer:DistanceFromCharacter(door..Position) <= OrionLib.Flags.autodoordistance.Value then
+                if door.Name == "TouchInterest" and door.Parent.Name == "kickBox" and Players.LocalPlayer:DistanceFromCharacter(door.Parent.Position) <= OrionLib.Flags.autodoordistance.Value then
                     door.Parent.Parent.RemoteEvent:FireServer()
                 end
             end
@@ -258,6 +254,7 @@ Tab:AddButton({ -- 自动过关
                     for _, i in pairs(hitboxes) do
                         teleportPlayerTo(i.CFrame)
                     end
+                    local hitboxes = {}
                     task.wait(0.02)
                 end
             end)
@@ -316,7 +313,7 @@ Tab:AddToggle({ -- 玩家提醒
     Default = false,
     Flag = "PlayerNotifications"
 })
-Esp:AddToggle({ -- door
+Esp:AddToggle({
     Name = "门透视",
     Default = true,
     Callback = function(Value)
@@ -324,15 +321,15 @@ Esp:AddToggle({ -- door
             doorsesp = true
             for _, themodel in pairs(workspace:GetDescendants()) do
                 if themodel.Name == "Door" then
-                    if themodel.Parent.Name == "Door" then
-                        espmodel(themodel,"Door","门","0","1","0",true)
+                    if themodel.Parent.Parent.Name == "Rooms" then--第一个Parent为房间号
+                        createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
                     end
                 end
             end
             local esp = workspace.DescendantAdded:Connect(function(themodel)
                 if themodel.Name == "Door" then
-                    if themodel.Parent.Name == "Door" then
-                        espmodel(themodel,"Door","门","0","1","0",true)
+                    if themodel.Parent.Parent.Name == "Rooms" then
+                        createBilltoesp(themodel,"门", Color3.new(0,1,0),true)
                     end
                 end
             end)
@@ -341,12 +338,12 @@ Esp:AddToggle({ -- door
                 while OrionLib:IsRunning() do
                     if doorsesp ~= true then
                         esp:Disconnect()
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "门透视高光" then
+                                hl:Destroy()   
+                            end   
+                        end
                         break
-                    end
-                    for _, hl in pairs(PlayerGui:GetChildren()) do
-                        if hl.Name == "门透视高光" then
-                            hl:Destroy()   
-                        end   
                     end
                     task.wait(0.1)
                 end
@@ -354,6 +351,47 @@ Esp:AddToggle({ -- door
         else
             doorsesp = false
             unesp("门")
+        end
+    end
+})
+Esp:AddToggle({ -- door
+    Name = "拉杆透视",
+    Default = true,
+    Callback = function(Value)
+        if Value then
+            leveresp = true
+            for _, themodel in pairs(workspace:GetDescendants()) do
+                if themodel.Name == "Breaker" then
+                    if themodel.Parent.Parent.Name == "Rooms" then
+                        createBilltoesp(themodel,"拉杆", Color3.new(0,1,0),false)
+                    end
+                end
+            end
+            local esp = workspace.DescendantAdded:Connect(function(themodel)
+                if themodel.Name == "Breaker" then
+                    if themodel.Parent.Parent.Name == "Rooms" then
+                        createBilltoesp(themodel,"拉杆", Color3.new(0,1,0),false)
+                    end
+                end
+            end)
+            table.insert(Connects,esp)
+            task.spawn(function()
+                while OrionLib:IsRunning() do
+                    if leveresp ~= true then
+                        esp:Disconnect()
+                        for _, hl in pairs(PlayerGui:GetChildren()) do
+                            if hl.Name == "拉杆透视高光" then
+                                hl:Destroy()   
+                            end   
+                        end
+                        break
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        else
+            leveresp = false
+            unesp("拉杆")
         end
     end
 })
@@ -464,6 +502,15 @@ another:AddTextbox({
 	TextDisappear = true,
 	Callback = function(Value)
 		workspace.DEATHTIMER.Value = Value
+	end	  
+})
+local Section = another:AddSection({
+    Name = "其他"
+})
+another:AddButton({
+	Name = "自杀(启动伪God mode后失效)",
+	Callback = function()
+		game:GetService("ReplicatedStorage").KillClient:InvokeServer()
 	end	  
 })
 others:AddButton({
