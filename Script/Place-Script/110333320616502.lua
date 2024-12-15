@@ -20,7 +20,7 @@ local RS = game:GetService("ReplicatedStorage")
 local Character = Players.LocalPlayer.Character -- 本地玩家Character
 local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
 local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
-local Window = OrionLib:MakeWindow({
+Window = OrionLib:MakeWindow({
     IntroText = "Grace",
     Name = "Grace",
     HidePremium = false,
@@ -165,6 +165,11 @@ local Del = Window:MakeTab({
 })
 local another = Window:MakeTab({
     Name = "杂项",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+local others = Window:MakeTab({
+    Name = "其他",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
@@ -597,7 +602,32 @@ another:AddButton({
 		game:GetService("ReplicatedStorage").KillClient:InvokeServer()
 	end	  
 })
-loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/Tabs/OrionGui-Others.lua'))()
+local Section = others:AddSection({
+    Name = "其他"
+})
+others:AddButton({
+    Name = "注入Infinity Yield",
+    Callback = function()
+        Notify("注入Infinity Yield", "尝试注入中")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        Notify("注入Infinity Yield", "注入完成(如果没有加载则重试)")
+    end
+})
+others:AddButton({
+    Name = "注入Dex v2 white(会卡顿)",
+    Callback = function()
+        Notify("注入Dex v2 white", "尝试注入中")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0'))()
+        Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
+    end
+})
+others:AddButton({
+    Name = "删除此窗口",
+    Callback = function()
+        OrionLib:Destroy()
+    end
+})
+loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/Tabs/OrionGui-About.lua'))()
 workspaceDA = workspace.DescendantAdded:Connect(function(inst)
     NotifiEntity(inst,"Rush","Rush(粉怪)","spawn",OrionLib.Flags.norush.Value)
     NotifiEntity(inst,"Worm","Worm(白怪)","spawn",OrionLib.Flags.noworm.Value)

@@ -143,6 +143,11 @@ local Animator = Window:MakeTab({
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
+local others = Window:MakeTab({
+    Name = "其他",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
 --子界面
 local Section = Tab:AddSection({
     Name = "主功能"
@@ -342,7 +347,32 @@ Animator:AddButton({
         Animation("rbxassetid://18836343961")
     end
 })
-loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/Tabs/OrionGui-Others.lua'))()
+local Section = others:AddSection({
+    Name = "其他"
+})
+others:AddButton({
+    Name = "注入Infinity Yield",
+    Callback = function()
+        Notify("注入Infinity Yield", "尝试注入中")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        Notify("注入Infinity Yield", "注入完成(如果没有加载则重试)")
+    end
+})
+others:AddButton({
+    Name = "注入Dex v2 white(会卡顿)",
+    Callback = function()
+        Notify("注入Dex v2 white", "尝试注入中")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0'))()
+        Notify("注入Dex v2 white", "注入完成(如果没有加载则重试)")
+    end
+})
+others:AddButton({
+    Name = "删除此窗口",
+    Callback = function()
+        OrionLib:Destroy()
+    end
+})
+loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/Tabs/OrionGui-About.lua'))()
 Players.PlayerAdded:Connect(function(player)
     if OrionLib.Flags.PlayerNotifications.Value then
         if player:IsFriendsWith(Players.LocalPlayer.UserId) then
