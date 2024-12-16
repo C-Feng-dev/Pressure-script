@@ -27,7 +27,7 @@ Window = OrionLib:MakeWindow({
     SaveConfig = true,
     ConfigFolder = "Cfg/Regretevator"
 })
-on Notify(name,content,time,Sound,SoundId) -- 信息
+Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
