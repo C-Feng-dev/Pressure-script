@@ -8,12 +8,12 @@ if loadsuc ~= true then
     return
 end
 print("--OrionLib已加载完成--------------------------------加载中--")
-nects = {}
-rtService = game:GetService("TeleportService") -- 传送服务
-s = game:GetService("Players") -- 玩家服务
-ter = Players.LocalPlayer.Character -- 本地玩家Character
-id = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
-Gui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
+EspConnects = {}
+teleportService = game:GetService("TeleportService") -- 传送服务
+Players = game:GetService("Players") -- 玩家服务
+Character = Players.LocalPlayer.Character -- 本地玩家Character
+Humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
+PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
 OrionLib:MakeNotification({
     Name = "加载中...",
     Content = "可能会有短暂卡顿",
@@ -27,7 +27,7 @@ Window = OrionLib:MakeWindow({
     SaveConfig = true,
     ConfigFolder = "Cfg/Regretevator"
 })
-Notify(name,content,time,Sound,SoundId) -- 信息
+function Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
@@ -37,11 +37,11 @@ Notify(name,content,time,Sound,SoundId) -- 信息
         Sound = Sound
     })
 end
-on nofloorerr()
+function nofloorerr()
     Notify("透视失败","楼层未出现",3,true)
 end
-on createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
-     Instance.new("BillboardGui", theobject) -- 创建BillboardGui
+function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
+    Instance.new("BillboardGui", theobject) -- 创建BillboardGui
     bill.AlwaysOnTop = true
     bill.Size = UDim2.new(0, 100, 0, 50)
     bill.Adornee = theobject
@@ -80,7 +80,7 @@ on createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Colo
         end
     end)
 end
-on espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
+function espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
     for _, themodel in pairs(workspace:GetDescendants()) do
         if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
             createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
@@ -93,7 +93,7 @@ on espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
     end)
     table.insert(EspConnects,esp)
 end
-on unesp(name) -- unEsp物品用
+function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
         if esp.Name == name .. "esp" then
             esp:Destroy()
@@ -105,7 +105,7 @@ on unesp(name) -- unEsp物品用
         end
     end
 end
-on teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
+function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
     if player.Character:FindFirstChild("HumanoidRootPart") then
         player.Character.HumanoidRootPart.CFrame = CFrame.new(toPositionVector3)
     end
