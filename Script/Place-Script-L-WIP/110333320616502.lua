@@ -1,5 +1,5 @@
 --Grace
-local loadsuc, OrionLib = pcall(function()
+loadsuc, OrionLib = pcall(function()
     return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/main.lua'))()
 end)
 if loadsuc ~= true then
@@ -13,13 +13,13 @@ OrionLib:MakeNotification({
     Image = "rbxassetid://4483345998",
     Time = 4
 })
-local Connects = {}
-local noautoinst = {}
-local Players = game:GetService("Players") -- 玩家服务
-local RS = game:GetService("ReplicatedStorage")
-local Character = Players.LocalPlayer.Character -- 本地玩家Character
-local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
-local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
+Connects = {}
+noautoinst = {}
+Players = game:GetService("Players") -- 玩家服务
+RS = game:GetService("ReplicatedStorage")
+Character = Players.LocalPlayer.Character -- 本地玩家Character
+humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
+PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
 Window = OrionLib:MakeWindow({
     IntroText = "Grace",
     Name = "Grace",
@@ -27,7 +27,7 @@ Window = OrionLib:MakeWindow({
     SaveConfig = true,
     ConfigFolder = "Cfg/Grace"
 })
-local function Notify(name,content,time,Sound,SoundId) -- 信息
+function Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
@@ -37,21 +37,21 @@ local function Notify(name,content,time,Sound,SoundId) -- 信息
         SoundId = SoundId
     })
 end
-local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
-    local bill = Instance.new("BillboardGui", theobject) -- 创建BillboardGui
+function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
+    bill = Instance.new("BillboardGui", theobject) -- 创建BillboardGui
     bill.AlwaysOnTop = true
     bill.Size = UDim2.new(0, 100, 0, 50)
     bill.Adornee = theobject
     bill.MaxDistance = 2000
     bill.Name = name .. "esp"
-    local mid = Instance.new("Frame", bill) -- 创建Frame-圆形
+    mid = Instance.new("Frame", bill) -- 创建Frame-圆形
     mid.AnchorPoint = Vector2.new(0.5, 0.5)
     mid.BackgroundColor3 = color
     mid.Size = UDim2.new(0, 8, 0, 8)
     mid.Position = UDim2.new(0.5, 0, 0.5, 0)
     Instance.new("UICorner", mid).CornerRadius = UDim.new(1, 0)
     Instance.new("UIStroke", mid)
-    local txt = Instance.new("TextLabel", bill) -- 创建TextLabel-显示
+    txt = Instance.new("TextLabel", bill) -- 创建TextLabel-显示
     txt.AnchorPoint = Vector2.new(0.5, 0.5)
     txt.BackgroundTransparency = 1
     txt.TextColor3 =color
@@ -60,7 +60,7 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
     txt.Text = name
     Instance.new("UIStroke", txt)
     --[[if hlset then
-        local hl = Instance.new("Highlight",PlayerGui)
+        hl = Instance.new("Highlight",PlayerGui)
         hl.Name = name .. "透视高光"
         hl.Adornee = theobject
         hl.DepthMode = "AlwaysOnTop"
@@ -76,7 +76,7 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
         end
     end)]]
 end
-local function unesp(name) -- unEsp物品用
+function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
         if esp.Name == name .. "esp" then
             esp:Destroy()
@@ -88,15 +88,15 @@ local function unesp(name) -- unEsp物品用
         end
     end
 end
-local function teleportPlayerTo(toPositionVector3) -- 传送玩家-Vector3.new(x,y,z)
+function teleportPlayerTo(toPositionVector3) -- 传送玩家-Vector3.new(x,y,z)
     if Character:FindFirstChild("HumanoidRootPart") then
         Character.HumanoidRootPart.CFrame = toPositionVector3
     end
 end
-local function chatMessage(chat) -- 发送信息
+function chatMessage(chat) -- 发送信息
     game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(tostring(chat))
 end
-local function NotifiEntity(inst,EntityName,NotifyName,mode,delflag)
+function NotifiEntity(inst,EntityName,NotifyName,mode,delflag)
     if mode == "spawn" then
         if inst.Name == EntityName and OrionLib:IsRunning() then
             if delflag then
@@ -123,7 +123,7 @@ local function NotifiEntity(inst,EntityName,NotifyName,mode,delflag)
         end
     end
 end
-local function loadfinish() -- 加载完成后向控制台发送
+function loadfinish() -- 加载完成后向控制台发送
     print("--------------------------加载完成--------------------------")
     print("--Grace Script已加载完成")
     print("--欢迎使用!" .. game.Players.LocalPlayer.Name)
@@ -141,34 +141,34 @@ task.spawn(function()--关闭设置
 	for _, Connection in pairs(Connects) do
 		Connection:Disconnect()
 	end
-    local t = {"autodoor","autolever","autoinst","ezinst"}
+    t = {"autodoor","autolever","autoinst","ezinst"}
     for _, v in pairs(t) do
         v = false
     end
 end)
 loadfinish()--其他结束->加载完成信息
 Notify("加载完成", "已成功加载")
-local Tab = Window:MakeTab({
+Tab = Window:MakeTab({
     Name = "主界面",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Esp = Window:MakeTab({
+Esp = Window:MakeTab({
     Name = "透视",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Del = Window:MakeTab({
+Del = Window:MakeTab({
     Name = "删除",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local another = Window:MakeTab({
+another = Window:MakeTab({
     Name = "杂项",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local others = Window:MakeTab({
+others = Window:MakeTab({
     Name = "其他",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
@@ -185,7 +185,7 @@ Tab:AddToggle({
     Flag = "chatNotifyEntities",
     Save = true
 })
-local Section = Tab:AddSection({
+Section = Tab:AddSection({
     Name = "交互"
 })
 Tab:AddLabel("交互距离超过40可能会导致交互bug")
@@ -275,7 +275,7 @@ Tab:AddToggle({
         end
     end
 })
-local Section = Tab:AddSection({
+Section = Tab:AddSection({
     Name = "其他"
 })
 Tab:AddLabel("请删除所有实体生成再使用自动过关")
@@ -285,7 +285,7 @@ Tab:AddButton({ -- 自动过关
         if OrionLib.Flags.sureautogame.Value then
             task.spawn(function()
                 while OrionLib.Flags.sureautogame.Value do
-                    local hitboxes = {}
+                    hitboxes = {}
                     for _, hitbox in pairs(workspace.Rooms:GetDescendants()) do
                         if hitbox.Name == "hitBox" then
                             table.insert(hitboxes,hitbox)
@@ -294,7 +294,7 @@ Tab:AddButton({ -- 自动过关
                     for _, i in pairs(hitboxes) do
                         teleportPlayerTo(i.CFrame)
                     end
-                    local hitboxes = {}
+                    hitboxes = {}
                     task.wait(0.02)
                 end
             end)
@@ -312,7 +312,7 @@ Tab:AddToggle({ -- 高亮
     Name = "高亮(低质量)",
     Default = true,
     Callback = function(Value)
-        local Light = game:GetService("Lighting")
+        Light = game:GetService("Lighting")
         if Value then
             FullBrightLite = true
             task.spawn(function()
@@ -370,7 +370,7 @@ Esp:AddToggle({
                     end
                 end
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 if themodel.Name == "Door" then
                     if themodel.Parent.Parent.Name == "Rooms" then
                         if themodel:WaitForChild("Door"):IsA("Model") then
@@ -415,7 +415,7 @@ Esp:AddToggle({ -- door
                     end
                 end
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 if themodel.Name == "Breaker" then
                     if themodel.Parent.Parent.Name == "Rooms" then
                         createBilltoesp(themodel,"拉杆", Color3.new(1,0,0),false)
@@ -456,7 +456,7 @@ Esp:AddToggle({
                     end
                 end
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 if themodel.Name == "VaultEntrance" then
                     if themodel.Parent.Name == "SafeRoom" then
                         createBilltoesp(themodel:WaitForChild("Hinged"),"井口", Color3.new(0,1,0),true)
@@ -488,7 +488,7 @@ Del:AddLabel("使用God mode被某些实体击杀时可能会导致bug")
 Del:AddButton({
     Name = "God mode",
     Callback = function()
-        local suc,err = pcall(function()
+        suc,err = pcall(function()
             RS.KillClient:Destroy()
             Notify("伪God mode","成功删除")
         end)
@@ -531,7 +531,7 @@ Del:AddToggle({
 Del:AddButton({
     Name = "删除Goatman生成",
     Callback = function()
-        local suc,err = pcall(function()
+        suc,err = pcall(function()
             RS.SendGoatman:Destroy()
             Notify("删除Goatman","成功删除")
         end)
@@ -544,7 +544,7 @@ Del:AddButton({
 Del:AddButton({ 
     Name = "删除Rush生成",
     Callback = function()
-        local suc,err = pcall(function()
+        suc,err = pcall(function()
             RS.SendRush:Destroy()
             RS.Rush:Destroy()
             Notify("删除Rush","成功删除")
@@ -558,7 +558,7 @@ Del:AddButton({
 Del:AddButton({ 
     Name = "删除Sorrow生成",
     Callback = function()
-        local suc,err = pcall(function()
+        suc,err = pcall(function()
             RS.SendSorrow:Destroy()
             Notify("删除Sorrow","成功删除")
         end)
@@ -571,7 +571,7 @@ Del:AddButton({
 Del:AddButton({ 
     Name = "删除Worm生成",
     Callback = function()
-        local suc,err = pcall(function()
+        suc,err = pcall(function()
             RS.SendWorm:Destroy()
             RS.Worm:Destroy()
             Notify("删除Worm","成功删除")
@@ -582,7 +582,7 @@ Del:AddButton({
         end
     end
 })
-local Section = another:AddSection({
+Section = another:AddSection({
     Name = "倒计时设置"
 })
 another:AddLabel("需要至少激活一次倒计时才可使用")
@@ -593,7 +593,7 @@ another:AddTextbox({
 		workspace.DEATHTIMER.Value = Value
 	end	  
 })
-local Section = another:AddSection({
+Section = another:AddSection({
     Name = "其他"
 })
 another:AddButton({
@@ -602,7 +602,7 @@ another:AddButton({
 		game:GetService("ReplicatedStorage").KillClient:InvokeServer()
 	end	  
 })
-local Section = others:AddSection({
+Section = others:AddSection({
     Name = "其他"
 })
 others:AddButton({

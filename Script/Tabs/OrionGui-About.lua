@@ -1,4 +1,4 @@
-local others = Window:MakeTab({
+others = Window:MakeTab({
     Name = "其他",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false

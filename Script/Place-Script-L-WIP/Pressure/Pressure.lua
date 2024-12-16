@@ -1,4 +1,4 @@
-local loadsuc, OrionLib = pcall(function()
+loadsuc, OrionLib = pcall(function()
     return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/main.lua'))()
 end)
 if loadsuc ~= true then
@@ -20,20 +20,20 @@ Window = OrionLib:MakeWindow({
     ConfigFolder = "Cfg/Pressure-Game"
 })
 -- local设置
-local entityNames = {"Angler", "RidgeAngler", "Blitz", "RidgeBlitz", "Pinkie", "RidgePinkie", "Froger", "RidgeFroger","Chainsmoker", "Pandemonium", "Eyefestation", "A60", "Mirage"} -- 实体
-local noautoinst = {"Locker", "MonsterLocker", "LockerUnderwater", "Generator", "BrokenCable","EncounterGenerator","Saboterousrusrer","Toilet"}
-local playerPositions = {} -- 存储玩家坐标
-local Entitytoavoid = {} -- 自动躲避用-检测自动躲避的实体
-local EspConnects = {}
-local TeleportService = game:GetService("TeleportService") -- 传送服务
-local Players = game:GetService("Players") -- 玩家服务
-local Character = Players.LocalPlayer.Character -- 本地玩家Character
-local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
-local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
-local RS = game:GetService("ReplicatedStorage")
-local RemoteFolder = RS.Events -- Remote Event储存区之一
+entityNames = {"Angler", "RidgeAngler", "Blitz", "RidgeBlitz", "Pinkie", "RidgePinkie", "Froger", "RidgeFroger","Chainsmoker", "Pandemonium", "Eyefestation", "A60", "Mirage"} -- 实体
+noautoinst = {"Locker", "MonsterLocker", "LockerUnderwater", "Generator", "BrokenCable","EncounterGenerator","Saboterousrusrer","Toilet"}
+playerPositions = {} -- 存储玩家坐标
+Entitytoavoid = {} -- 自动躲避用-检测自动躲避的实体
+EspConnects = {}
+TeleportService = game:GetService("TeleportService") -- 传送服务
+Players = game:GetService("Players") -- 玩家服务
+Character = Players.LocalPlayer.Character -- 本地玩家Character
+humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
+PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
+RS = game:GetService("ReplicatedStorage")
+RemoteFolder = RS.Events -- Remote Event储存区之一
 --local结束->Function设置
-local function Notify(name,content,time,Sound,SoundId) -- 信息
+function Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
@@ -43,35 +43,35 @@ local function Notify(name,content,time,Sound,SoundId) -- 信息
         SoundId = SoundId
     })
 end
-local function copyNotifi(copyitemname) -- 复制信息
+function copyNotifi(copyitemname) -- 复制信息
     Notify(copyitemname, "已成功复制")
 end
-local function delNotifi(delthings) -- 删除信息
+function delNotifi(delthings) -- 删除信息
     Notify(delthings, "已成功删除")
 end
-local function entityNotifi(entityname) -- 实体提醒
+function entityNotifi(entityname) -- 实体提醒
     Notify("实体提醒", entityname)
 end
-local function copyitems(copyitem) -- 复制物品
-    local create_NumberValue = Instance.new("NumberValue") -- copy items-type NumberValue
+function copyitems(copyitem) -- 复制物品
+    create_NumberValue = Instance.new("NumberValue") -- copy items-type NumberValue
     create_NumberValue.Name = copyitem
     create_NumberValue.Parent = game.Players.LocalPlayer.PlayerFolder.Inventory
 end
-local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
-    local bill = Instance.new("BillboardGui", theobject) -- 创建BillboardGui
+function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
+    bill = Instance.new("BillboardGui", theobject) -- 创建BillboardGui
     bill.AlwaysOnTop = true
     bill.Size = UDim2.new(0, 100, 0, 50)
     bill.Adornee = theobject
     bill.MaxDistance = 2000
     bill.Name = name .. "esp"
-    local mid = Instance.new("Frame", bill) -- 创建Frame-圆形
+    mid = Instance.new("Frame", bill) -- 创建Frame-圆形
     mid.AnchorPoint = Vector2.new(0.5, 0.5)
     mid.BackgroundColor3 = color
     mid.Size = UDim2.new(0, 8, 0, 8)
     mid.Position = UDim2.new(0.5, 0, 0.5, 0)
     Instance.new("UICorner", mid).CornerRadius = UDim.new(1, 0)
     Instance.new("UIStroke", mid)
-    local txt = Instance.new("TextLabel", bill) -- 创建TextLabel-显示
+    txt = Instance.new("TextLabel", bill) -- 创建TextLabel-显示
     txt.AnchorPoint = Vector2.new(0.5, 0.5)
     txt.BackgroundTransparency = 1
     txt.TextColor3 =color
@@ -80,7 +80,7 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
     txt.Text = name
     Instance.new("UIStroke", txt)
     if hlset then
-        local hl = Instance.new("Highlight",PlayerGui)
+        hl = Instance.new("Highlight",PlayerGui)
         hl.Name = name .. "透视高光"
         hl.Adornee = theobject
         hl.DepthMode = "AlwaysOnTop"
@@ -96,12 +96,12 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
         end)
     end
 end
-local function espmodel(themodel,modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
+function espmodel(themodel,modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
     if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
         createBilltoesp(themodel, name, Color3.new(r,g,b),hlset)
     end
 end
-local function unesp(name) -- unEsp物品用
+function unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
         if esp.Name == name .. "esp" then
             esp:Destroy()
@@ -113,7 +113,7 @@ local function unesp(name) -- unEsp物品用
         end
     end
 end
-local function createPlatform(name, sizeVector3,positionVector3) -- 创建平台-Vector3.new(x,y,z)
+function createPlatform(name, sizeVector3,positionVector3) -- 创建平台-Vector3.new(x,y,z)
     if Platform then
         Platform:Destroy() -- 移除多余平台
     end
@@ -126,7 +126,7 @@ local function createPlatform(name, sizeVector3,positionVector3) -- 创建平台
     Platform.Transparency = 1
     Platform.CastShadow = false
 end
-local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
+function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
     if player.Character:FindFirstChild("HumanoidRootPart") then
         if saveposition then
             playerPositions[player.UserId] = player.Character.HumanoidRootPart.CFrame
@@ -134,7 +134,7 @@ local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送
         player.Character.HumanoidRootPart.CFrame = CFrame.new(toPositionVector3)
     end
 end
-local function teleportPlayerBack(player) -- 返回玩家 
+function teleportPlayerBack(player) -- 返回玩家 
     if playerPositions[player.UserId] then
         player.Character.HumanoidRootPart.CFrame = playerPositions[player.UserId]
         playerPositions[player.UserId] = nil -- 清除坐标
@@ -142,10 +142,10 @@ local function teleportPlayerBack(player) -- 返回玩家
         warn("返回失败!存储玩家原坐标的数值无法用于返回")
     end
 end
-local function chatMessage(chat) -- 发送信息
+function chatMessage(chat) -- 发送信息
     game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(tostring(chat))
 end
-local function loadfinish() -- 加载完成后向控制台发送
+function loadfinish() -- 加载完成后向控制台发送
     print("--------------------------加载完成--------------------------")
     print("--Pressure Script已加载完成")
     print("--欢迎使用!" .. game.Players.LocalPlayer.Name)
@@ -168,33 +168,33 @@ end)
 loadfinish()--其他结束->加载完成信息
 Notify("加载完成", "已成功加载")
 --Tab界面
-local Tab = Window:MakeTab({
+Tab = Window:MakeTab({
     Name = "主界面",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Item = Window:MakeTab({
+Item = Window:MakeTab({
     Name = "物品",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Del = Window:MakeTab({
+Del = Window:MakeTab({
     Name = "删除",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Esp = Window:MakeTab({
+Esp = Window:MakeTab({
     Name = "透视",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local others = Window:MakeTab({
+others = Window:MakeTab({
     Name = "其他",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
 --子界面
-local Section = Tab:AddSection({
+Section = Tab:AddSection({
     Name = "实体"
 })
 Tab:AddToggle({
@@ -221,7 +221,7 @@ Tab:AddButton({ -- 手动返回
         teleportPlayerBack(Players.LocalPlayer)
     end
 })
-local Section = Tab:AddSection({
+Section = Tab:AddSection({
     Name = "交互"
 })
 Tab:AddToggle({ -- 轻松交互
@@ -258,7 +258,7 @@ Tab:AddToggle({ -- 轻松修复
         ezfix = true
         task.spawn(function()
             while ezfix and OrionLib:IsRunning() do
-                local FixGame = PlayerGui.Main.FixMinigame.Background.Frame.Middle
+                FixGame = PlayerGui.Main.FixMinigame.Background.Frame.Middle
                 FixGame.Circle.Rotation = FixGame.Pointer.Rotation - 20
                 task.wait()
             end
@@ -301,7 +301,7 @@ Tab:AddToggle({ -- 轻松交互
         auto367game = true
         task.spawn(function()
             while auto367game and OrionLib:IsRunning() do
-                local PandemoniumGame = PlayerGui.Main.PandemoniumMiniGame.Background.Frame
+                PandemoniumGame = PlayerGui.Main.PandemoniumMiniGame.Background.Frame
                 PandemoniumGame.circle.Position = UDim2.new(0, 0, 0, 20)
                 task.wait()
             end
@@ -330,7 +330,7 @@ Tab:AddToggle({ -- 轻松交互
         end)
     end
 })
-local Section = Tab:AddSection({
+Section = Tab:AddSection({
     Name = "相机"
 })
 Tab:AddToggle({ -- 保持广角
@@ -354,7 +354,7 @@ Tab:AddToggle({ -- 高亮
     Name = "高亮(低质量)",
     Default = true,
     Callback = function(Value)
-        local Light = game:GetService("Lighting")
+        Light = game:GetService("Lighting")
         if Value then
             FullBrightLite = true
             task.spawn(function()
@@ -389,7 +389,7 @@ Tab:AddToggle({ -- 高亮
             thirdperson = false
         end
     end})]]
-local Section = Tab:AddSection({
+Section = Tab:AddSection({
     Name = "其他"
 })
 Tab:AddButton({ --传送门
@@ -622,7 +622,7 @@ Esp:AddToggle({ -- door
                     espmodel(themodel,"BigRoomDoor","大门","0","1","0",true)
                 end
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 if themodel.Parent.Name == "Entrances" then
                     espmodel(themodel,"NormalDoor","门","0","1","0",true)
                     espmodel(themodel,"BigRoomDoor","大门","0","1","0",true)
@@ -659,7 +659,7 @@ Esp:AddToggle({ -- locker
             for _, themodel in pairs(workspace:GetDescendants()) do
                 espmodel(themodel,"Locker","柜子","0","1","0",false)
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 espmodel(themodel,"Locker","柜子","0","1","0",false)
             end)
             table.insert(EspConnects,esp)
@@ -689,7 +689,7 @@ Esp:AddToggle({ -- keycard
                 espmodel(themodel,"InnerKeyCard","特殊钥匙卡","100","0","255",true)
                 espmodel(themodel,"RidgeKeyCard","山脊钥匙卡","1","1","0",true)
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 espmodel(themodel,"NormalKeyCard","钥匙卡","0","0","1",true)
                 espmodel(themodel,"InnerKeyCard","特殊钥匙卡","100","0","255",true)
                 espmodel(themodel,"RidgeKeyCard","山脊钥匙卡","1","1","0",true)
@@ -728,7 +728,7 @@ Esp:AddToggle({ -- fake door
                 espmodel(themodel,"ServerTrickster", "假门", "1", "0", "0",true)
                 espmodel(themodel,"RidgeTricksterRoom", "假门", "1", "0", "0",true)
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 espmodel(themodel,"TricksterRoom", "假门", "1", "0", "0",true)
                 espmodel(themodel,"ServerTrickster", "假门", "1", "0", "0",true)
                 espmodel(themodel,"RidgeTricksterRoom", "假门", "1", "0", "0",true)
@@ -763,7 +763,7 @@ Esp:AddToggle({ -- fake locker
             for _, themodel in pairs(workspace:GetDescendants()) do
                 espmodel(themodel,"MonsterLocker", "假柜子", "1", "0", "0",false)
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 espmodel(themodel,"MonsterLocker", "假柜子", "1", "0", "0",false)
             end)
             table.insert(EspConnects,esp)
@@ -792,7 +792,7 @@ Esp:AddToggle({ -- 发电机
                 espmodel(themodel,"EncounterGenerator", "未修复发电机", "1", "0", "0",false)
                 espmodel(themodel,"BrokenCables", "未修复电缆", "1", "0", "0",false)
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 espmodel(themodel,"EncounterGenerator", "未修复发电机", "1", "0", "0",false)
                 espmodel(themodel,"BrokenCables", "未修复电缆", "1", "0", "0",false)
             end)
@@ -832,7 +832,7 @@ Esp:AddToggle({ -- 物品
                 espmodel(themodel,"WindupLight", "手摇手电筒", "85", "100", "66",false)
                 espmodel(themodel,"Book", "魔法书", "0", "255", "255",true)
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 espmodel(themodel,"DefaultBattery1", "电池", "1", "1", "1",false)
                 espmodel(themodel,"Flashlight", "手电筒", "25", "25", "25",false)
                 espmodel(themodel,"Lantern", "灯笼", "99", "99", "99",false)
@@ -893,7 +893,7 @@ Esp:AddToggle({ -- 钱
                 espmodel(themodel,"200Currency", "200钱", "0", "1", "1",true)
                 espmodel(themodel,"Relic", "500钱", "0", "1", "1",true)
             end
-            local esp = workspace.DescendantAdded:Connect(function(themodel)
+            esp = workspace.DescendantAdded:Connect(function(themodel)
                 espmodel(themodel,"5Currency", "5钱", "1", "1", "1",false)
                 espmodel(themodel,"10Currency", "10钱", "1", "1", "1",false)
                 espmodel(themodel,"15Currency", "15钱", "0.5", "0.5", "0.5",false)
@@ -955,7 +955,7 @@ Esp:AddToggle({ -- 玩家
         end
     end
 })
-local Section = others:AddSection({
+Section = others:AddSection({
     Name = "其他"
 })
 others:AddButton({
@@ -1000,12 +1000,12 @@ workspaceDA = workspace.DescendantAdded:Connect(function(inst) -- 其他
         for _, SLE in pairs(workspace:GetDescendants()) do
             if SLE.Name == "SearchlightsEncounter" then
                 task.wait(0.1)
-                local SLE_room = workspace.Rooms.SearchlightsEncounter
+                SLE_room = workspace.Rooms.SearchlightsEncounter
                 SLE_room.Searchlights:Destroy()
                 SLE_room.MainSearchlight:Destroy()
             elseif SLE.Name == "SearchlightsEnding" and OrionLib.Flags.nosearchlights.Value then
                 task.wait(0.1)
-                local SLE_room = workspace.Rooms.SearchlightsEnding.Interactables
+                SLE_room = workspace.Rooms.SearchlightsEnding.Interactables
                 SLE_room.Searchlights1:Destroy()
                 SLE_room.Searchlights2:Destroy()
                 SLE_room.Searchlights3:Destroy()

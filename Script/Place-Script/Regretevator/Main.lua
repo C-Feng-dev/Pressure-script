@@ -1,6 +1,6 @@
 --Regretevator-WIP
 print("--------------------成功注入，正在加载中--------------------")
-local loadsuc, OrionLib = pcall(function()
+c, OrionLib = pcall(function()
     return loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/Orion/refs/heads/main/main.lua'))()
 end)
 if loadsuc ~= true then
@@ -8,12 +8,12 @@ if loadsuc ~= true then
     return
 end
 print("--OrionLib已加载完成--------------------------------加载中--")
-local EspConnects = {}
-local TeleportService = game:GetService("TeleportService") -- 传送服务
-local Players = game:GetService("Players") -- 玩家服务
-local Character = Players.LocalPlayer.Character -- 本地玩家Character
-local humanoid = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
-local PlayerGui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
+nects = {}
+rtService = game:GetService("TeleportService") -- 传送服务
+s = game:GetService("Players") -- 玩家服务
+ter = Players.LocalPlayer.Character -- 本地玩家Character
+id = Character:FindFirstChild("Humanoid") -- 本地玩家humanoid
+Gui = Players.LocalPlayer.PlayerGui--本地玩家PlayerGui
 OrionLib:MakeNotification({
     Name = "加载中...",
     Content = "可能会有短暂卡顿",
@@ -27,7 +27,7 @@ Window = OrionLib:MakeWindow({
     SaveConfig = true,
     ConfigFolder = "Cfg/Regretevator"
 })
-local function Notify(name,content,time,Sound,SoundId) -- 信息
+Notify(name,content,time,Sound,SoundId) -- 信息
     OrionLib:MakeNotification({
         Name = name,
         Content = content,
@@ -37,24 +37,24 @@ local function Notify(name,content,time,Sound,SoundId) -- 信息
         Sound = Sound
     })
 end
-local function nofloorerr()
+on nofloorerr()
     Notify("透视失败","楼层未出现",3,true)
 end
-local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
-    local bill = Instance.new("BillboardGui", theobject) -- 创建BillboardGui
+on createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui-颜色:Color3.new(r,g,b)
+     Instance.new("BillboardGui", theobject) -- 创建BillboardGui
     bill.AlwaysOnTop = true
     bill.Size = UDim2.new(0, 100, 0, 50)
     bill.Adornee = theobject
     bill.MaxDistance = 2000
     bill.Name = name .. "esp"
-    local mid = Instance.new("Frame", bill) -- 创建Frame-圆形
+    Instance.new("Frame", bill) -- 创建Frame-圆形
     mid.AnchorPoint = Vector2.new(0.5, 0.5)
     mid.BackgroundColor3 = color
     mid.Size = UDim2.new(0, 8, 0, 8)
     mid.Position = UDim2.new(0.5, 0, 0.5, 0)
     Instance.new("UICorner", mid).CornerRadius = UDim.new(1, 0)
     Instance.new("UIStroke", mid)
-    local txt = Instance.new("TextLabel", bill) -- 创建TextLabel-显示
+    Instance.new("TextLabel", bill) -- 创建TextLabel-显示
     txt.AnchorPoint = Vector2.new(0.5, 0.5)
     txt.BackgroundTransparency = 1
     txt.TextColor3 =color
@@ -63,7 +63,7 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
     txt.Text = name
     Instance.new("UIStroke", txt)
     if hlset then
-        local hl = Instance.new("Highlight",bill)
+        nstance.new("Highlight",bill)
         hl.Name = name .. "透视高光"
         hl.Parent = PlayerGui
         hl.Adornee = theobject
@@ -80,20 +80,20 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
         end
     end)
 end
-local function espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
+on espmodel(modelname,name,r,g,b,hlset) -- Esp物品(Model对象)用
     for _, themodel in pairs(workspace:GetDescendants()) do
         if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
             createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
         end
     end
-    local esp = workspace.DescendantAdded:Connect(function(themodel)
+    workspace.DescendantAdded:Connect(function(themodel)
         if themodel:IsA("Model") and themodel.Parent.Name ~= Players and themodel.Name == modelname then
             createBilltoesp(themodel,name, Color3.new(r,g,b),hlset)
         end
     end)
     table.insert(EspConnects,esp)
 end
-local function unesp(name) -- unEsp物品用
+on unesp(name) -- unEsp物品用
     for _, esp in pairs(workspace:GetDescendants()) do
         if esp.Name == name .. "esp" then
             esp:Destroy()
@@ -105,32 +105,32 @@ local function unesp(name) -- unEsp物品用
         end
     end
 end
-local function teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
+on teleportPlayerTo(player,toPositionVector3,saveposition) -- 传送玩家-Vector3.new(x,y,z)
     if player.Character:FindFirstChild("HumanoidRootPart") then
         player.Character.HumanoidRootPart.CFrame = CFrame.new(toPositionVector3)
     end
 end
-local Tab = Window:MakeTab({
+Window:MakeTab({
     Name = "主界面",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Esp = Window:MakeTab({
+Window:MakeTab({
     Name = "透视",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local TP = Window:MakeTab({
+indow:MakeTab({
     Name = "传送",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local others = Window:MakeTab({
+ = Window:MakeTab({
     Name = "其他",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-local Section = Tab:AddSection({
+n = Tab:AddSection({
     Name = "通用"
 })
 Tab:AddToggle({ -- 轻松交互
@@ -160,7 +160,7 @@ Tab:AddToggle({ -- 高亮
     Name = "高亮(低质量)",
     Default = true,
     Callback = function(Value)
-        local Light = game:GetService("Lighting")
+        = game:GetService("Lighting")
         if Value then
             FullBrightLite = true
             task.spawn(function()
@@ -215,7 +215,7 @@ TP:AddButton({
         end
         teleportPlayerTo(player,toPositionVector3,saveposition)
     end
-local Section = others:AddSection({
+n = others:AddSection({
     Name = "其他"
 })
 others:AddButton({
