@@ -1,12 +1,12 @@
 print("--------------------成功注入，正在加载中--------------------")
-local baseUrl = "https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/"
---local librepo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/' 
+local baseUrl = "https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/LinoriaLib-Gui/Script/"
+local librepo = 'https://raw.githubusercontent.com/C-Feng-dev/LinoriaLib/main/' 
 local function load(url)
     return loadstring(game:HttpGet(url))()
 end
---[[local Library = load(librepo .. 'Library.lua')
+local Library = load(librepo .. 'Library.lua')
 local ThemeManager = load(librepo .. 'addons/ThemeManager.lua')
-local SaveManager = load(librepo .. 'addons/SaveManager.lua')]]
+local SaveManager = load(librepo .. 'addons/SaveManager.lua')
 local PlaceTable = load(baseUrl .. "GameTable.lua")
 local ScriptPath = PlaceTable[game.GameId].Folder .. "/" .. PlaceTable[game.GameId].Place[game.PlaceId]
 local suc,err = pcall(function()
