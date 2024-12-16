@@ -1,5 +1,5 @@
 return {
-    [2440500124] = {--Gameid
+    [4367208330] = {--Gameid
         ["Folder"] = "Pressure",--文件夹名
         ["Main"] = "Pressure",--标题名开头
         ["Place"] = {--Place区分
