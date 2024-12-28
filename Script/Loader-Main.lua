@@ -8,10 +8,21 @@ local Library = load(librepo .. 'Library.lua')
 local ThemeManager = load(librepo .. 'addons/ThemeManager.lua')
 local SaveManager = load(librepo .. 'addons/SaveManager.lua')
 local PlaceTable = load(baseUrl .. "GameTable.lua")
+print("--LinoriaLib等加载完成--------------------------尝试加载中--")
+if not PlaceTable[game.GameId] then
+    Library:Notify("加载失败!不支持此游戏")
+    warn("加载失败!不支持此游戏")
+    return
+end
+if not PlaceTable[game.GameId].Place[game.PlaceId] then
+    Library:Notify("加载失败!不支持此游戏")
+    return
+end
 local function ScriptPath(mid)
     return PlaceTable[game.GameId].Folder .. mid .. PlaceTable[game.GameId].Place[game.PlaceId]
 end
-print("--LinoriaLib等加载完成------------------------------加载中--")
+getgenv().Toggles = Toggles
+getgenv().Options = Options
 Window = Library:CreateWindow({
     Title = "*CFHub* " .. ScriptPath(" - "),
     Center = true,
@@ -31,7 +42,7 @@ if not suc then
     load(baseUrl .. "Tab/Hub.lua")
     return
 end
-function loadfinish(location) -- 加载完成后向控制台发送
+local function loadfinish(location) -- 加载完成后向控制台发送
     print("--------------------------加载完成--------------------------")
     print("--CF Hub已加载完成")
     print("--欢迎使用!" .. game.Players.LocalPlayer.Name)

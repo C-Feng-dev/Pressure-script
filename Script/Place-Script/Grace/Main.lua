@@ -1,91 +1,24 @@
-Tab = Window:MakeTab({
-    Name = "主界面",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-Esp = Window:MakeTab({
-    Name = "透视",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-Del = Window:MakeTab({
-    Name = "删除",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-another = Window:MakeTab({
-    Name = "杂项",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-others = Window:MakeTab({
-    Name = "其他",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-Tab:AddToggle({
+local Tabs = {
+    Main = Window:AddTab('主界面'),
+    Esp = Window:AddTab('透视'),
+    Del = Window:AddTab('删除'),
+    Misc = Window:AddTab('杂项'),
+    Other = Window:AddTab('其他')
+}
+local MainEntity = Tabs.Main:AddLeftGroupbox('实体')
+MainEntity:AddToggle('NotifyEntities',{
     Name = "实体提醒",
-    Default = true,
-    Flag = "NotifyEntities",
-    Save = true
+    Default = true
 })
-Tab:AddToggle({
+MainEntity:AddToggle('chatNotifyEntities',{
     Name = "实体播报",
-    Default = false,
-    Flag = "chatNotifyEntities",
-    Save = true
+    Default = false
 })
-Section = Tab:AddSection({
-    Name = "交互"
-})
-Tab:AddLabel("交互距离超过40可能会导致交互bug")
-Tab:AddSlider({
-    Name = "交互距离",
-    Min = 12,
-    Max = 100,
-    Default = 12,
-    Increment = 1,
-    Flag = "autoinstdistance"
-})
-Tab:AddSlider({
-    Name = "自动拉杆距离",
-    Min = 5,
-    Max = 100,
-    Default = 20,
-    Increment = 1,
-    Flag = "autoleverdistance"
-})
-Tab:AddSlider({
-    Name = "自动开门距离",
-    Min = 5,
-    Max = 100,
-    Default = 20,
-    Increment = 1,
-    Flag = "autodoordistance"
-})
-Tab:AddToggle({ -- 轻松交互
-    Name = "修改交互距离",
-    Default = true,
-    Callback = function(Value)  
-        if Value then          
-            ezinst = true
-            task.spawn(function()
-                while ezinst and OrionLib:IsRunning() do
-                    for _, toezInteract in pairs(workspace.Rooms:GetDescendants()) do
-                        if toezInteract:IsA("ProximityPrompt") then
-                            toezInteract.RequiresLineOfSight = false
-                            toezInteract.MaxActivationDistance = OrionLib.Flags.autoinstdistance.Value
-                        end
-                    end
-                    task.wait(0.1)
-                end
-            end)
-        else
-            ezinst = false
-        end
-    end
-})
-Tab:AddToggle({
+local MainAutoInstTabbox = Tabs.Main:AddRightTabbox() -- Add Tabbox on right side
+local autoinstTab = MainAutoInstTabbox:AddTab('自动交互')
+local autoinstDistanceTab = MainAutoInstTabbox:AddTab('交互距离')
+autoinstDistanceTab:AddLabel("交互距离超过40可能会导致交互bug")
+autoinstTab:AddToggle('autolever',{
     Name = "自动拉杆",
     Default = false,
     Callback = function(Value)
@@ -97,7 +30,7 @@ Tab:AddToggle({
         while autolever do  
             for _, breaker in pairs(workspace.Rooms:GetDescendants()) do
                 if breaker.Name == "Breaker" then
-                    if Players.LocalPlayer:DistanceFromCharacter(breaker:WaitForChild("base").Position) <= OrionLib.Flags.autoleverdistance.Value then
+                    if Players.LocalPlayer:DistanceFromCharacter(breaker:WaitForChild("base").Position) <= Options.autoleverdistance.Value then
                         breaker.Touched:FireServer()
                     end
                 end
@@ -106,7 +39,7 @@ Tab:AddToggle({
         end
     end
 })
-Tab:AddToggle({
+autoinstTab:AddToggle({
     Name = "自动开门(黄门)",
     Default = false,
     Callback = function(Value)
@@ -117,13 +50,37 @@ Tab:AddToggle({
         end
         while autodoor do
             for _, door in pairs(workspace.Rooms:GetDescendants()) do
-                if door.Name == "TouchInterest" and door.Parent.Name == "kickBox" and Players.LocalPlayer:DistanceFromCharacter(door.Parent.Position) <= OrionLib.Flags.autodoordistance.Value then
+                if door.Name == "TouchInterest" and door.Parent.Name == "kickBox" and Players.LocalPlayer:DistanceFromCharacter(door.Parent.Position) <= Options.autodoordistance.Value then
                     door.Parent.Parent.RemoteEvent:FireServer()
                 end
             end
             task.wait(0.1)
         end
     end
+})
+autoinstDistanceTab:AddSlider('autoinstdistance',{
+    Name = "交互距离",
+    Min = 12,
+    Max = 100,
+    Default = 12,
+    Rounding = 1,
+    Suffix = "格"
+})
+autoinstDistanceTab:AddSlider('autoleverdistance',{
+    Name = "自动拉杆距离",
+    Min = 5,
+    Max = 100,
+    Default = 20,
+    Rounding = 1,
+    Suffix = "格"
+})
+autoinstDistanceTab:AddSlider('autodoordistance',{
+    Name = "自动开门距离",
+    Min = 5,
+    Max = 100,
+    Default = 20,
+    Rounding = 1,
+    Suffix = "格"
 })
 Section = Tab:AddSection({
     Name = "其他"
@@ -132,9 +89,9 @@ Tab:AddLabel("请删除所有实体生成再使用自动过关")
 Tab:AddButton({ -- 自动过关
     Name = "自动过关",
     Callback = function()
-        if OrionLib.Flags.sureautogame.Value then
+        if Options.sureautogame.Value then
             task.spawn(function()
-                while OrionLib.Flags.sureautogame.Value do
+                while Options.sureautogame.Value do
                     hitboxes = {}
                     for _, hitbox in pairs(workspace.Rooms:GetDescendants()) do
                         if hitbox.Name == "hitBox" then
@@ -479,32 +436,33 @@ others:AddButton({
 })
 loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/main/Script/Tabs/OrionGui-About.lua'))()
 workspaceDA = workspace.DescendantAdded:Connect(function(inst)
-    NotifiEntity(inst,"Rush","Rush(粉怪)","spawn",OrionLib.Flags.norush.Value)
-    NotifiEntity(inst,"Worm","Worm(白怪)","spawn",OrionLib.Flags.noworm.Value)
-    if inst.Name == "Rush" and OrionLib.Flags.norush.Value then
+    NotifiEntity(inst,"Rush","Rush(粉怪)","spawn",Options.norush.Value)
+    NotifiEntity(inst,"Worm","Worm(白怪)","spawn",Options.noworm.Value)
+    if inst.Name == "Rush" and Options.norush.Value then
         inst:Destroy()
         RS.SendRush.Carnation.tinnitus.Playing = false
     end
-    if inst.Name == "Worm" and OrionLib.Flags.noworm.Value then
+    if inst.Name == "Worm" and Options.noworm.Value then
         inst:Destroy()
         RS.SendWorm.Slugfish.tinnitus.Playing = false
     end
-    if inst.Name == "eye" and OrionLib.Flags.noblueeyes.Value then
+    if inst.Name == "eye" and Options.noblueeyes.Value then
         inst:Destroy()
     end
-    if inst.Name == "eyePrime" and OrionLib.Flags.noredeyes.Value then
+    if inst.Name == "eyePrime" and Options.noredeyes.Value then
         inst:Destroy()
     end
-    if inst.Name == "elkman" and OrionLib.Flags.noelkman.Value then
+    if inst.Name == "elkman" and Options.noelkman.Value then
         inst:Destroy()
     end
 end)
 workspaceDR = workspace.DescendantRemoving:Connect(function(inst)
-    NotifiEntity(inst,"Rush","Rush(粉怪)","remove",OrionLib.Flags.norush.Value)
-    NotifiEntity(inst,"Worm","Worm(白怪)","remove",OrionLib.Flags.noworm.Value)
+    NotifiEntity(inst,"Rush","Rush(粉怪)","remove",Options.norush.Value)
+    NotifiEntity(inst,"Worm","Worm(白怪)","remove",Options.noworm.Value)
 end)
 PlayersGuiDR = PlayerGui.DescendantAdded:Connect(function(inst)
-    if inst.Name == "smilegui" and OrionLib.Flags.nodozer.Value then
+    if inst.Name == "smilegui" and Options.nodozer.Value then
         inst:Destroy()
     end
 end)
+LoadSetting()

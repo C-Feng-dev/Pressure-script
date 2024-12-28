@@ -2,7 +2,7 @@ return {
     [4367208330] = {--Gameid
         ["Folder"] = "Pressure",--文件夹名
         ["Main"] = "Pressure",--标题名开头
-        ["Loader"] = {--Place区分
+        ["Place"] = {--Place区分
             [12411473842] = "Lobby",--[PlaceId] = "标题后缀+具体名"
             [17355897213] = "The-Raveyard",
             [12552538292] = "Hadal-Blackside",
@@ -12,7 +12,15 @@ return {
     [6508759464] = {
         ["Folder"] = "Grace",
         ["Main"] = "Grace",
-        ["Loader"] = {
+        ["Place"] = {
+            [138837502355157] = "Lobby",
+            [110333320616502] = "Main"
+        }
+    },
+    [6508759464] = {
+        ["Folder"] = "Grace",
+        ["Main"] = "Grace",
+        ["Place"] = {
             [138837502355157] = "Lobby",
             [110333320616502] = "Main"
         }
@@ -20,7 +28,7 @@ return {
     [1709917610] = {
         ["Folder"] = "Regretevator",
         ["Main"] = "Regretevator",
-        ["Loader"] = {
+        ["Place"] = {
             [4972273297] = "Main",
         }
     }
