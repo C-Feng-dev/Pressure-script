@@ -20,7 +20,7 @@ function LoadSetting(defaultWatermark)
         NoUI = true,
         Text = '菜单键'
     })
-    local defaultWatermark = defaultWatermark or true
+    local defaultWatermark = defaultWatermark or false
     if defaultWatermark then
         local FrameTimer = tick()
         local FrameCounter = 0
