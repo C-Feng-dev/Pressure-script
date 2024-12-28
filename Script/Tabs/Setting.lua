@@ -1,6 +1,6 @@
-function LoadSetting(defaultWatermark)
+function LoadSetting(defaultWatermark,WatermarkConnection)
     Tabs['UI Settings'] = Window:AddTab('UI设置')
-    MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
+    local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('菜单')
     MenuGroup:AddButton({
         Text = '关闭界面',
         DoubleClick = true,
@@ -8,7 +8,7 @@ function LoadSetting(defaultWatermark)
             Library:Unload()
         end
     })
-    MenuGroup:AddButton({
+    MenuGroup:AddToggle('WatermarkVisibility', {
         Text = '上方UI条',
         Default = true,
         Func = function(Value)
@@ -20,12 +20,12 @@ function LoadSetting(defaultWatermark)
         NoUI = true,
         Text = '菜单键'
     })
-    local defaultWatermark = defaultWatermark or false
+    local defaultWatermark = defaultWatermark or true
     if defaultWatermark then
         local FrameTimer = tick()
         local FrameCounter = 0
         local FPS = 60
-        local WatermarkConnection = game:GetService('RunService').RenderStepped:Connect(function()
+        DefaultWatermarkConnection = game:GetService('RunService').RenderStepped:Connect(function()
             FrameCounter += 1
             if (tick() - FrameTimer) >= 1 then
                 FPS = FrameCounter;
@@ -40,7 +40,11 @@ function LoadSetting(defaultWatermark)
     end
     Library.KeybindFrame.Visible = true
     Library:OnUnload(function()
-        WatermarkConnection:Disconnect()
+        if defaultWatermark then
+            DefaultWatermarkConnection:Disconnect()
+        else
+            WatermarkConnection:Disconnect()
+        end
         print('已关闭!')
         Library.Unloaded = true
     end)

@@ -31,17 +31,7 @@ Window = Library:CreateWindow({
     MenuFadeTime = 0.2
 })
 Library:Notify("加载中")
-local suc,err = pcall(function()
-    return load(baseUrl .. "Loader-Script/" .. ScriptPath("/") .. ".lua")
-end)
-if not suc then
-    warn("尝试加载对应外挂时出现错误,报错为:" .. err .. ",已尝试加载中心")
-    Library:Notify("加载失败!此UI将会在3秒后自动关闭")
-    task.wait(3)
-    Library:Unload()
-    load(baseUrl .. "Tab/Hub.lua")
-    return
-end
+load(baseUrl .. "Loader-Script/" .. ScriptPath("/") .. ".lua")--加载链接
 local function loadfinish(location) -- 加载完成后向控制台发送
     print("--------------------------加载完成--------------------------")
     print("--CF Hub已加载完成")
