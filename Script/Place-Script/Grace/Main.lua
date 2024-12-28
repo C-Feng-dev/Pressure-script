@@ -43,6 +43,32 @@ local function createBilltoesp(theobject,name,color,hlset) -- 创建BillboardGui
         end)
     end
 end
+local function chatMessage(chat) -- 发送信息
+    game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(tostring(chat))
+end
+local function NotifiEntity(inst,EntityName,NotifyName,mode,deltoggle)
+    if mode == "spawn" then
+        if inst.Name == EntityName then
+            if deltoggle then
+                Library:Notify("实体删除",NotifyName .. "已被删除")
+            elseif Toggles.NotifyEntities.Value then
+                Library:Notify("实体提醒",NotifyName .. "出现")
+            end        
+            if Toggles.chatNotifyEntities.Value then
+                chatMessage(NotifyName .. "出现")
+            end
+        end
+    elseif mode == "remove" then
+        if inst.Name == EntityName and not deltoggle then
+            if Toggles.NotifyEntities.Value then
+                Library:Notify("实体提醒",NotifyName .. "消失")
+            end        
+            if Toggles.chatNotifyEntities.Value then
+                chatMessage(NotifyName .. "消失")
+            end
+        end
+    end
+end
 local Tabs = {
     Main = Window:AddTab('主界面'),
     Act = Window:AddTab('行为'),
@@ -51,7 +77,7 @@ local Tabs = {
 local MainEntity = Tabs.Main:AddLeftGroupbox('实体')
 MainEntity:AddToggle('NotifyEntities',{
     Text = "实体提醒",
-    Default = true
+    Default = false
 })
 MainEntity:AddToggle('chatNotifyEntities',{
     Text = "实体播报",
@@ -65,12 +91,10 @@ autoinstTab:AddToggle('autolever',{
     Text = "自动拉杆",
     Default = false,
     Callback = function(Value)
-        if Value == true then
-            autolever = true
-        else
-            autolever = false
+        if Value == false then
+            return
         end
-        while autolever do  
+        while Toggles.autolever.Value do  
             for _, breaker in pairs(workspace.Rooms:GetDescendants()) do
                 if breaker.Name == "Breaker" then
                     if Players.LocalPlayer:DistanceFromCharacter(breaker:WaitForChild("base").Position) <= Options.autoleverdistance.Value then
@@ -86,12 +110,10 @@ autoinstTab:AddToggle('autodoor',{
     Text = "自动开门(黄门)",
     Default = false,
     Callback = function(Value)
-        if Value == true then
-            autodoor = true
-        else
-            autodoor = false
+        if Value == false then
+            return
         end
-        while autodoor do
+        while Toggles.autodoor.Value do
             for _, door in pairs(workspace.Rooms:GetDescendants()) do
                 if door.Name == "TouchInterest" and door.Parent.Name == "kickBox" and Players.LocalPlayer:DistanceFromCharacter(door.Parent.Position) <= Options.autodoordistance.Value then
                     door.Parent.Parent.RemoteEvent:FireServer()
@@ -123,13 +145,13 @@ autoinstDistanceTab:AddSlider('autodoordistance',{
     Rounding = 1,
 })
 local MainOther = Tabs.Main:AddLeftGroupbox('其他')
-MainOther:AddButton({ -- 自动过关
+MainOther:AddToggle('autogame',{ -- 自动过关
     Text = "自动过关",
     Tooltip = '请删除所有实体生成再使用自动过关',
     DoubleClick = true,
     Func = function()
         task.spawn(function()
-            while Toggles.sureautogame.Value do
+            while Toggles.autogame.Value do
                 hitboxes = {}
                 for _, hitbox in pairs(workspace.Rooms:GetDescendants()) do
                     if hitbox.Name == "hitBox" then
@@ -181,7 +203,7 @@ MainCamera:AddSlider('CamFOV',{
 })
 MainCamera:AddToggle('FullBrightLite',{ -- 高亮
     Text = "高亮(低质量)",
-    Default = true,
+    Default = false,
     Callback = function(Value)
         local Light = game:GetService("Lighting")
         if Value then
@@ -204,7 +226,7 @@ local ActEsp = Tabs.Act:AddLeftGroupbox('透视')
 local ActDel = Tabs.Act:AddRightGroupbox('删除')
 ActEsp:AddToggle('doorsesp',{
     Text = "门透视",
-    Default = true,
+    Default = false,
     Callback = function(Value)
         if Value then
             for _, themodel in pairs(workspace:GetDescendants()) do
@@ -251,7 +273,7 @@ ActEsp:AddToggle('doorsesp',{
 })
 ActEsp:AddToggle('leveresp',{ -- door
     Text = "拉杆透视",
-    Default = true,
+    Default = false,
     Callback = function(Value)
         if Value then
             for _, themodel in pairs(workspace:GetDescendants()) do
@@ -290,7 +312,7 @@ ActEsp:AddToggle('leveresp',{ -- door
 })
 ActEsp:AddToggle('SafeRoomVaultesp',{
     Text = "安全区井口透视",
-    Default = true,
+    Default = false,
     Callback = function(Value)
         if Value then
             for _, themodel in pairs(workspace:GetDescendants()) do
@@ -329,107 +351,75 @@ ActEsp:AddToggle('SafeRoomVaultesp',{
 })
 ActDel:AddButton({
     Text = "God mode",
-    Tooltip = '被某些实体击杀时可能会导致bug',
-    DoubleClick = true,
-    Func = function()
-        suc,err = pcall(function()
-            RS.KillClient:Destroy()
-            Library:Notify("成功开启伪God mode",3)
-        end)
-            if not suc then
-            Library:Notify("开启伪God mode时出错,可能已启用过此功能",3)
+    Tooltip = "被某些实体'击杀'时可能会导致bug",
+    Func = function(Value)
+        if Value then
+            RS.KillClient.Name = "KillClient_Disabled"
+        else
+            RS.KillClient_Disabled.Name = "KillClient"
         end
     end
 })
 ActDel:AddToggle('noblueeyes',{
     Text = "删除蓝眼",
-    Default = true
+    Default = false
 })
 ActDel:AddToggle('noredeyes',{
     Text = "删除红眼",
-    Default = true
+    Default = false
 })
 ActDel:AddToggle('norush',{ 
-    Text = "删除Rush",
-    Default = true
+    Text = "删除Rush(粉冲刺怪)",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            RS.SendRush.Name = "SendRush_Disabled"
+        else
+            RS.SendRush_Disabled.Name = "SendRush"
+        end
+    end
 })
 ActDel:AddToggle('noworm',{ 
-    Text = "删除Worm",
-    Default = true
+    Text = "删除Worm(白冲刺怪)",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            RS.SendWorm.Name = "SendWorm_Disabled"
+        else
+            RS.SendWorm_Disabled.Name = "SendWorm"
+        end
+    end
 })
 ActDel:AddToggle('noelkman',{ 
     Text = "删除elkman",
-    Default = true
+    Default = false
 })
 ActDel:AddToggle('nodozer',{ 
-    Text = "删除Dozer",
-    Default = true
+    Text = "删除Dozer(小太阳)",
+    Default = false
 })
-ActDel:AddButton({
-    Text = "防止Goatman生成",
+ActDel:AddToggle('noGoatman',{
+    Text = "删除Goatman",
     DoubleClick = true,
-    Func = function()
-        suc,err = pcall(function()
-            RS.SendGoatman:Destroy()
-            Library:Notify("成功启用防止Goatman生成",3)
-        end)
-            if not suc then
-            Library:Notify("启用防止Goatman生成时出错,可能已启用过此功能",3)
+    Callback = function(Value)
+        if Value then
+            RS.SendGoatman.Name = "SendGoatman_Disabled"
+        else
+            RS.SendGoatman_Disabled.Name = "SendGoatman"
         end
     end
 })
-ActDel:AddButton({ 
-    Text = "删除Rush生成",
-    DoubleClick = true,
-    Func = function()
-        suc,err = pcall(function()
-            RS.SendRush:Destroy()
-            RS.Rush:Destroy()
-            Library:Notify("成功启用防止Rush生成",3)
-        end)
-            if not suc then
-            Library:Notify("启用防止Rush生成时出错,可能已启用过此功能",3)
+ActDel:AddToggle('noSorrow',{ 
+    Text = "删除Sorrow(血雨)",
+    Callback = function(Value)
+        if Value then
+            RS.SendSorrow.Name = "SendSorrow_Disabled"
+        else
+            RS.SendSorrow_Disabled.Name = "SendSorrow"
         end
     end
 })
-ActDel:AddButton({ 
-    Text = "删除Sorrow生成",
-    DoubleClick = true,
-    Func = function()
-        suc,err = pcall(function()
-            RS.SendSorrow:Destroy()
-            Library:Notify("成功启用防止Sorrow生成",3)
-        end)
-            if not suc then
-            Library:Notify("启用防止Sorrow生成时出错,可能已启用过此功能",3)
-        end
-    end
-})
-ActDel:AddButton({ 
-    Text = "删除Worm生成",
-    DoubleClick = true,
-    Func = function()
-        suc,err = pcall(function()
-            RS.SendWorm:Destroy()
-            RS.Worm:Destroy()
-            Library:Notify("成功启用防止Worm生成",3)
-        end)
-            if not suc then
-            Library:Notify("启用防止Worm生成时出错,可能已启用过此功能",3)
-        end
-    end
-})
-local MiscTimer = Tabs.Misc:AddLeftGroupbox('计时器')
-local MiscScript = Tabs.Misc:AddRightGroupbox('注入')
-MiscTimer:AddInput('Timerstime',{
-	Text = "计时器时间",
-    Tooltip = '需要至少激活一次倒计时才可使用',
-    Numeric = true,
-    Finished = true,
-	Callback = function(Value)
-		workspace.DEATHTIMER.Value = Value
-	end	  
-})
+local MiscScript = Tabs.Misc:AddLeftGroupbox('注入')
 MiscScript:AddButton({
     Text = "注入Infinity Yield",
     Func = function()
@@ -449,14 +439,6 @@ MiscScript:AddButton({
 workspaceDA = workspace.DescendantAdded:Connect(function(inst)
     NotifiEntity(inst,"Rush","Rush(粉怪)","spawn",Toggles.norush.Value)
     NotifiEntity(inst,"Worm","Worm(白怪)","spawn",Toggles.noworm.Value)
-    if inst.Name == "Rush" and Toggles.norush.Value then
-        inst:Destroy()
-        RS.SendRush.Carnation.tinnitus.Playing = false
-    end
-    if inst.Name == "Worm" and Toggles.noworm.Value then
-        inst:Destroy()
-        RS.SendWorm.Slugfish.tinnitus.Playing = false
-    end
     if inst.Name == "eye" and Toggles.noblueeyes.Value then
         inst:Destroy()
     end
@@ -476,5 +458,6 @@ PlayersGuiDR = PlayerGui.DescendantAdded:Connect(function(inst)
         inst:Destroy()
     end
 end)
+Library:SetWatermark(('*CFHub* ' .. ScriptPath("-") .. ' | Main |'):format())
 
 LoadSetting(false)

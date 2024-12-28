@@ -1,4 +1,4 @@
-function LoadSetting(defaultWatermark,WatermarkConnection)
+function LoadSetting(defaultWatermark)
     Tabs['UI Settings'] = Window:AddTab('UI设置')
     local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('菜单')
     MenuGroup:AddButton({
@@ -6,13 +6,6 @@ function LoadSetting(defaultWatermark,WatermarkConnection)
         DoubleClick = true,
         Func = function()
             Library:Unload()
-        end
-    })
-    MenuGroup:AddToggle('WatermarkVisibility', {
-        Text = '上方UI条',
-        Default = true,
-        Func = function(Value)
-            Library:SetWatermarkVisibility(Value)
         end
     })
     MenuGroup:AddLabel('菜单按键'):AddKeyPicker('MenuKeybind', {
@@ -42,8 +35,6 @@ function LoadSetting(defaultWatermark,WatermarkConnection)
     Library:OnUnload(function()
         if defaultWatermark then
             DefaultWatermarkConnection:Disconnect()
-        else
-            WatermarkConnection:Disconnect()
         end
         print('已关闭!')
         Library.Unloaded = true
