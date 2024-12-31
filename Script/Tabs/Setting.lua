@@ -8,6 +8,13 @@ function LoadSetting(defaultWatermark)
             Library:Unload()
         end
     })
+    MenuGroup:AddToggle('KeybindVisible', {
+        Text = '键位显示',
+        Default = true,
+        Callback = function(Value)
+            Library.KeybindFrame.Visible = Value
+        end
+    })
     MenuGroup:AddLabel('菜单按键'):AddKeyPicker('MenuKeybind', {
         Default = 'RightShift',
         NoUI = true,
@@ -25,7 +32,7 @@ function LoadSetting(defaultWatermark)
                 FrameTimer = tick();
                 FrameCounter = 0;
             end
-            Library:SetWatermark(('LinoriaLib | %s fps | %s ms'):format(
+            Library:SetWatermark(('*CFHub* | %s fps | %s ms'):format(
                 math.floor(FPS),
                 math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())
             ))

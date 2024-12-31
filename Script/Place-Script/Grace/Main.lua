@@ -458,6 +458,5 @@ PlayersGuiDR = PlayerGui.DescendantAdded:Connect(function(inst)
         inst:Destroy()
     end
 end)
-Library:SetWatermark(('*CFHub* ' .. ScriptPath("-") .. ' | Main |'):format())
-
-LoadSetting(false)
+loadstring(game:HttpGet('https://raw.githubusercontent.com/C-Feng-dev/My-own-Script/refs/heads/LinoriaLib-Gui/Script/Tabs/Setting.lua'))()
+LoadSetting(true)
