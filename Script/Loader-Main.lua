@@ -4,6 +4,8 @@ local librepo = 'https://raw.githubusercontent.com/C-Feng-dev/LinoriaLib/main/'
 local function load(url)
     return loadstring(game:HttpGet(url))()
 end
+getgenv().CFHub_Toggles = Toggles
+getgenv().CFHub_Options = Options
 local Library = load(librepo .. 'Library.lua')
 local ThemeManager = load(librepo .. 'addons/ThemeManager.lua')
 local SaveManager = load(librepo .. 'addons/SaveManager.lua')
@@ -21,8 +23,6 @@ end
 local function ScriptPath(mid)
     return PlaceTable[game.GameId].Folder .. mid .. PlaceTable[game.GameId].Place[game.PlaceId]
 end
-getgenv().Toggles = Toggles
-getgenv().Options = Options
 Window = Library:CreateWindow({
     Title = "*CFHub* " .. ScriptPath(" - "),
     Center = true,
@@ -31,7 +31,7 @@ Window = Library:CreateWindow({
     MenuFadeTime = 0.2
 })
 Library:Notify("加载中")
-load(baseUrl .. "Loader-Script/" .. ScriptPath("/") .. ".lua")--加载链接
+load(baseUrl .. "Place-Script/" .. ScriptPath("/") .. ".lua")--加载链接
 local function loadfinish(location) -- 加载完成后向控制台发送
     print("--------------------------加载完成--------------------------")
     print("--CF Hub已加载完成")
